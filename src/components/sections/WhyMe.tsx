@@ -24,7 +24,7 @@ export function WhyMe() {
                   <span className="grid size-9 place-items-center rounded-[0.7rem] border border-hairline bg-elevated text-azure transition-colors duration-300 group-hover:border-azure/30">
                     <Icon className="size-4" strokeWidth={1.6} aria-hidden="true" />
                   </span>
-                  <h3 className="mt-5 text-[1.0625rem] font-medium tracking-[-0.015em] text-ink">
+                  <h3 className="mt-5 text-[1.25rem] font-medium tracking-[-0.02em] text-ink">
                     {reason.title}
                   </h3>
                   <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-ink-2">

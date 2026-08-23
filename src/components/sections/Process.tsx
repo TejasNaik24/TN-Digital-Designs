@@ -51,7 +51,7 @@ export function Process() {
 
                     <span className="mono-label text-ink-3">{step.step}</span>
 
-                    <h3 className="mt-4 text-[1.25rem] font-medium tracking-[-0.022em] text-ink">
+                    <h3 className="mt-4 text-[1.5rem] font-medium tracking-[-0.025em] text-ink">
                       {step.title}
                     </h3>
 

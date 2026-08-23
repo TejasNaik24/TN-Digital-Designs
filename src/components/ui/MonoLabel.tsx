@@ -23,7 +23,9 @@ export function MonoLabel({
           className="h-px w-8 bg-[linear-gradient(to_right,transparent,var(--color-azure))]"
         />
       )}
-      <span className="mono-label">{children}</span>
+      {/* Larger than the base mono-label size used for chips and form labels
+          — this is the section eyebrow, it needs to read at a glance. */}
+      <span className="mono-label text-[0.8125rem] tracking-[0.14em]">{children}</span>
     </span>
   );
 }

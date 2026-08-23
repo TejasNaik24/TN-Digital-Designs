@@ -33,7 +33,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
             <span className="mono-label text-ink-3">{service.label}</span>
           </div>
 
-          <h3 className="mt-7 text-[1.1875rem] font-medium tracking-[-0.02em] text-ink">
+          <h3 className="mt-7 text-[1.375rem] font-medium tracking-[-0.022em] text-ink">
             {service.title}
           </h3>
           <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-2">

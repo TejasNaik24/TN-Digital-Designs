@@ -48,14 +48,8 @@ export function Section({
 }) {
   return (
     <section
-      id={id}
       aria-labelledby={labelledBy}
-      className={cn(
-        'relative scroll-mt-24',
-        spacing[space],
-        tones[tone],
-        className,
-      )}
+      className={cn('relative', spacing[space], tones[tone], className)}
     >
       {tone === 'raised' && (
         <span
@@ -63,7 +57,13 @@ export function Section({
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(to_right,transparent,rgb(150_178_255/0.14),transparent)]"
         />
       )}
-      {children}
+      {/* The anchor target sits here, after the section's own top padding,
+          not on the section itself — anchoring on the outer padded box made
+          a nav click scroll to the top of that padding, leaving a wall of
+          empty space above the heading before any content appeared. */}
+      <div id={id} className="scroll-mt-24">
+        {children}
+      </div>
     </section>
   );
 }
