@@ -5,7 +5,6 @@ import { Reveal } from '@/components/ui/Reveal';
 import { GithubIcon, LinkedinIcon } from '@/components/ui/SocialIcons';
 import { ContactForm } from '@/components/contact/ContactForm';
 import { site } from '@/data/site';
-import { useReducedMotionSafe } from '@/hooks/useReducedMotionSafe';
 
 const channels = [
   { label: 'GitHub', href: site.social.github, icon: GithubIcon },
@@ -13,8 +12,6 @@ const channels = [
 ] as const;
 
 export function Contact() {
-  const reduced = useReducedMotionSafe();
-
   return (
     <Section id="contact" labelledBy="contact-heading" space="loose" className="relative">
       {/* This section gets its own pool of light — it's where the page is
@@ -81,24 +78,6 @@ export function Contact() {
               </div>
             </Reveal>
 
-            {site.availability.open && (
-              <Reveal delay={0.14}>
-                <div className="mt-10 flex items-center gap-3 rounded-xl border border-hairline bg-surface/40 px-4 py-3.5">
-                  <span
-                    aria-hidden="true"
-                    className="size-1.5 shrink-0 rounded-full bg-aqua"
-                    style={{
-                      animation: reduced
-                        ? undefined
-                        : 'live-dot 2.6s ease-in-out infinite',
-                    }}
-                  />
-                  <p className="text-[0.875rem] text-ink-2">
-                    Currently taking on new projects.
-                  </p>
-                </div>
-              </Reveal>
-            )}
           </div>
 
           <Reveal delay={0.06}>

@@ -73,20 +73,6 @@ export function Hero() {
               transition={{ duration: DUR.reveal, ease: EASE_EXPO }}
               className="flex flex-wrap items-center gap-x-4 gap-y-3"
             >
-              {site.availability.open && (
-                <span className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface/75 py-1.5 pl-2.5 pr-3.5">
-                  <span
-                    aria-hidden="true"
-                    className="size-1.5 rounded-full bg-aqua"
-                    style={{
-                      animation: reduced ? undefined : 'live-dot 2.6s ease-in-out infinite',
-                    }}
-                  />
-                  <span className="mono-label text-ink-2">
-                    {site.availability.label}
-                  </span>
-                </span>
-              )}
               <span className="mono-label text-ink-3">{site.hero.eyebrow}</span>
             </motion.p>
 
