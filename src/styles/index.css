@@ -329,6 +329,67 @@
   .surface-card:focus-within::after {
     opacity: 1;
   }
+
+  /* The "Start a project" glow button: same --spot-x/--spot-y mechanism as
+     surface-card, but a dedicated (denser, tighter) treatment rather than
+     reusing its numbers as-is. A pill is ~50px tall — surface-card's 340px
+     wash and 14% mix are tuned for a card several hundred px across, and at
+     button scale they read as barely-there. Here the core is a near-solid
+     patch of the accent colour, so passing the cursor through genuinely
+     reads as filling the dark pill in, not just tinting it. */
+  .btn-glow {
+    --glow: var(--color-azure);
+    position: relative;
+    isolation: isolate;
+  }
+
+  .btn-glow::before,
+  .btn-glow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 280ms var(--ease-expo);
+  }
+
+  .btn-glow::before {
+    z-index: 2;
+    padding: 1px;
+    background: radial-gradient(
+      150px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+      var(--glow),
+      transparent 72%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+  }
+
+  .btn-glow::after {
+    z-index: 0;
+    background: radial-gradient(
+      130px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+      color-mix(in oklab, var(--glow) 60%, var(--color-surface-2)) 0%,
+      color-mix(in oklab, var(--glow) 26%, transparent) 58%,
+      transparent 80%
+    );
+  }
+
+  .btn-glow:hover::before,
+  .btn-glow:focus-within::before {
+    opacity: 0.95;
+  }
+  .btn-glow:hover::after,
+  .btn-glow:focus-within::after {
+    opacity: 1;
+  }
 }
 
 /* ── Keyframes ────────────────────────────────────────────────────────────── */

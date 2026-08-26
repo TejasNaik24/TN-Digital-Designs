@@ -100,6 +100,7 @@ export function Hero() {
             >
               <LinkButton
                 href="#contact"
+                variant="glow"
                 size="lg"
                 arrow="right"
                 className="max-sm:w-full"

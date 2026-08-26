@@ -22,6 +22,10 @@ import { useEffect, type RefObject } from 'react';
 export function usePointerGlow(
   enabled: boolean,
   ref: RefObject<HTMLElement | null>,
+  /** Lerp factor per frame. Higher tracks the cursor more tightly — used to
+   *  give a small core glow a faster response than the wide halo behind it,
+   *  which is what makes the pair read as depth rather than one flat blob. */
+  ease = 0.075,
 ): void {
   useEffect(() => {
     const el = ref.current;
@@ -41,8 +45,8 @@ export function usePointerGlow(
     const tick = () => {
       const dx = targetX - x;
       const dy = targetY - y;
-      x += dx * 0.075;
-      y += dy * 0.075;
+      x += dx * ease;
+      y += dy * ease;
       write();
 
       // Arrived: park the loop instead of burning frames on sub-pixel drift.
@@ -81,5 +85,5 @@ export function usePointerGlow(
       window.removeEventListener('pointermove', onPointerMove);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [enabled, ref]);
+  }, [enabled, ref, ease]);
 }

@@ -113,6 +113,7 @@ export function MobileMenu({
             >
               <LinkButton
                 href="#contact"
+                variant="glow"
                 size="lg"
                 arrow="right"
                 onClick={(event) => {

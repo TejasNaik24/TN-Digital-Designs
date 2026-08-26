@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { ConstellationField } from './ConstellationField';
 import { usePointerGlow } from '@/hooks/usePointerGlow';
 import { useHasFinePointer } from '@/hooks/useMediaQuery';
 import { useReducedMotionSafe } from '@/hooks/useReducedMotionSafe';
@@ -7,6 +8,11 @@ import { useReducedMotionSafe } from '@/hooks/useReducedMotionSafe';
  *  center to the cursor via transform:translate(-50%,-50%) lines up exactly
  *  with the old 560px-radius gradient. */
 const GLOW_SIZE = 1120;
+
+/** The tighter inner glow that sits on top of it. Tracks faster (see the ease
+ *  argument below), which is what sells the two layers as one light source
+ *  with depth rather than a single flat wash. */
+const CORE_SIZE = 380;
 
 /**
  * The room the site sits in.
@@ -27,9 +33,11 @@ export function AmbientBackground() {
   const finePointer = useHasFinePointer();
   const reduced = useReducedMotionSafe();
   const glowRef = useRef<HTMLDivElement>(null);
+  const coreRef = useRef<HTMLDivElement>(null);
 
   // Touch devices get the ambient layers without the cursor tracking.
   usePointerGlow(finePointer && !reduced, glowRef);
+  usePointerGlow(finePointer && !reduced, coreRef, 0.16);
 
   return (
     <div
@@ -93,7 +101,14 @@ export function AmbientBackground() {
         }}
       />
 
-      {/* 4 — the cursor glow. Low opacity: the page notices you, it doesn't
+      {/* 3.5 — the constellation. Drawn in canvas rather than DOM: it's the
+                only layer here that is genuinely animating every frame, and a
+                single canvas is one compositor layer with no gradients to
+                repaint. See ConstellationField for the full reasoning. */}
+      <ConstellationField />
+
+      {/* 4 — the cursor glow, in two layers: a wide halo and a tighter core
+              that tracks faster. Low opacity: the page notices you, it doesn't
               shine a torch at you.
               No mix-blend-mode: it's a well-known Safari performance cliff —
               WebKit falls back to CPU-assisted compositing for a blended
@@ -109,16 +124,28 @@ export function AmbientBackground() {
               actual cause of "the mouse itself feels laggy" in Safari: it
               fired on every hover, everywhere, continuously. */}
       {finePointer && !reduced && (
-        <div
-          ref={glowRef}
-          className="absolute left-0 top-0 will-change-transform"
-          style={{
-            width: GLOW_SIZE,
-            height: GLOW_SIZE,
-            background:
-              'radial-gradient(circle, rgb(96 150 255 / 0.09), rgb(139 92 246 / 0.04) 42%, transparent 68%)',
-          }}
-        />
+        <>
+          <div
+            ref={glowRef}
+            className="absolute left-0 top-0 will-change-transform"
+            style={{
+              width: GLOW_SIZE,
+              height: GLOW_SIZE,
+              background:
+                'radial-gradient(circle, rgb(96 150 255 / 0.16), rgb(139 92 246 / 0.08) 42%, transparent 68%)',
+            }}
+          />
+          <div
+            ref={coreRef}
+            className="absolute left-0 top-0 will-change-transform"
+            style={{
+              width: CORE_SIZE,
+              height: CORE_SIZE,
+              background:
+                'radial-gradient(circle, rgb(150 190 255 / 0.13), rgb(99 102 241 / 0.07) 45%, transparent 70%)',
+            }}
+          />
+        </>
       )}
 
       {/* 5 — grain, to keep the gradients from banding on wide displays.

@@ -135,6 +135,7 @@ export function Navbar() {
             <div className="relative z-10 flex items-center gap-3">
               <LinkButton
                 href="#contact"
+                variant="glow"
                 arrow="right"
                 size="md"
                 className="hidden sm:inline-flex"

@@ -1,8 +1,9 @@
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { cn } from '@/lib/cn';
+import { useSpotlight } from '@/hooks/useSpotlight';
 
-type Variant = 'primary' | 'secondary' | 'ghost';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'glow';
 type Size = 'md' | 'lg';
 
 const base =
@@ -30,6 +31,17 @@ const variants: Record<Variant, string> = {
     'hover:border-[rgb(150_178_255/0.34)] hover:bg-surface-2/70',
   ),
   ghost: 'text-ink-2 hover:text-ink',
+  // Dark like `secondary`, but a dense patch of the accent colour fills in
+  // from wherever the cursor actually is — same --spot-x/--spot-y tracking
+  // mechanism as `surface-card` (see useSpotlight), tuned much stronger for
+  // a button's small scale (see .btn-glow in index.css). Reserved for the
+  // site's single highest-priority CTA ("Start a project"): the same
+  // treatment on every button would dilute it into background noise instead
+  // of it reading as the one thing you're meant to click.
+  glow: cn(
+    'btn-glow border border-hairline-strong bg-surface/70 text-ink',
+    'hover:bg-surface-2/70',
+  ),
 };
 
 type SharedProps = {
@@ -70,8 +82,12 @@ export function Button({
   children,
   ...rest
 }: SharedProps & Omit<ComponentPropsWithoutRef<'button'>, 'children' | 'className'>) {
+  const { ref, onPointerMove } = useSpotlight<HTMLButtonElement>();
+  const tracked = variant === 'glow';
   return (
     <button
+      ref={tracked ? ref : undefined}
+      onPointerMove={tracked ? onPointerMove : undefined}
       type="button"
       className={cn(base, sizes[size], variants[variant], className)}
       {...rest}
@@ -89,8 +105,15 @@ export function LinkButton({
   children,
   ...rest
 }: SharedProps & Omit<ComponentPropsWithoutRef<'a'>, 'children' | 'className'>) {
+  const { ref, onPointerMove } = useSpotlight<HTMLAnchorElement>();
+  const tracked = variant === 'glow';
   return (
-    <a className={cn(base, sizes[size], variants[variant], className)} {...rest}>
+    <a
+      ref={tracked ? ref : undefined}
+      onPointerMove={tracked ? onPointerMove : undefined}
+      className={cn(base, sizes[size], variants[variant], className)}
+      {...rest}
+    >
       <Inner arrow={arrow}>{children}</Inner>
     </a>
   );
