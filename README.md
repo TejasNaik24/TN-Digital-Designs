@@ -10,10 +10,6 @@ Live positioning: *"I build websites that make people trust you before you say a
 
 This is a **client-acquisition site for a one-person web development studio**. Its only job is to make a business owner want to hire Tejas to build their website.
 
-It is **not** a portfolio, résumé, or academic site. That exists separately at [tejasnaik.vercel.app](https://tejasnaik.vercel.app).
-
-**Never add** employers, internships, research, publications, coursework, or academic credentials here. An earlier draft pulled real résumé content into the Work section and it actively undermined the site — a founder evaluating a web developer reads *"student researcher"* as *"not a professional studio."*
-
 Constraints that follow from this:
 
 | Rule | Why |
