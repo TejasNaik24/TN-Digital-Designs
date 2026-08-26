@@ -1,6 +1,6 @@
-# TN Digital
+# TN Digital Designs
 
-The website for **TN Digital**, the independent web design and development studio of Tejas Naik.
+The website for **TN Digital Designs**, the independent web design and development studio of Tejas Naik.
 
 Live positioning: *"I build websites that make people trust you before you say a word."*
 
