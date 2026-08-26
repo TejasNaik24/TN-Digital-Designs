@@ -110,3 +110,43 @@ export function scrollToId(id: string): void {
 export function scrollToTop(): void {
   scrollToY(0);
 }
+
+/* ── Instant landings, for route changes ──────────────────────────────────
+ *
+ * Route changes own the scroll position absolutely, and they must never
+ * animate. Two reasons, both load-bearing:
+ *
+ * 1. An in-flight tween keeps writing `window.scrollTo(0, value)` from its
+ *    `onUpdate` every frame — including after a route change. Jumping without
+ *    cancelling first just gets undone on the tween's next frame, so every
+ *    jump below goes through `cancel()`.
+ *
+ * 2. Animating a long cross-route jump breaks `useRevealOnce`. A tween moves
+ *    the viewport faster than any human scroll, so a section can go from fully
+ *    below to fully above between two frames: intersection ratio reads 0 both
+ *    times, no threshold is crossed, no callback is delivered, and the
+ *    `top < 0` rescue never gets a chance to fire. Those sections stay at
+ *    opacity 0 forever. Landing instantly sidesteps it, because the position
+ *    is established before any observer exists.
+ *
+ * These deliberately do NOT reuse `scrollToY`: it bails under 4px and clamps
+ * against `scrollHeight`, which during a route transition is still the *old*
+ * page's height. The browser clamps `window.scrollTo` itself, against the real
+ * live document.
+ */
+
+export function jumpToY(to: number): void {
+  cancel();
+  window.scrollTo(0, Math.max(0, to));
+}
+
+export function jumpToTop(): void {
+  jumpToY(0);
+}
+
+export function jumpToId(id: string): void {
+  const target = document.getElementById(id);
+  if (!target) return;
+  const scrollMarginTop = parseFloat(getComputedStyle(target).scrollMarginTop) || 0;
+  jumpToY(target.getBoundingClientRect().top + window.scrollY - scrollMarginTop);
+}

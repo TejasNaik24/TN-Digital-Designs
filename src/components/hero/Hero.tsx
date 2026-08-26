@@ -8,7 +8,7 @@ import { site } from '@/data/site';
 import { DUR, EASE_EXPO } from '@/lib/motion';
 import { useReducedMotionSafe } from '@/hooks/useReducedMotionSafe';
 import { useHasFinePointer } from '@/hooks/useMediaQuery';
-import { scrollToId } from '@/lib/scroll';
+import { useAnchorNavigate } from '@/lib/navigation';
 
 /** Page-load choreography: one sequence, top to bottom, then it's done. */
 const enter = {
@@ -22,6 +22,7 @@ export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const deviceRef = useRef<HTMLDivElement>(null);
   const { index, label } = useBuildCycle(deviceRef);
+  const { hrefFor, onClickFor } = useAnchorNavigate();
 
   // Cursor tilt — the device leans toward the pointer anywhere in the hero.
   // Kept to ±3.5° so it reads as attention, not as a 3D toy.
@@ -99,28 +100,22 @@ export function Hero() {
               className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
             >
               <LinkButton
-                href="#contact"
+                href={hrefFor('contact')}
                 variant="glow"
                 size="lg"
                 arrow="right"
                 className="max-sm:w-full"
-                onClick={(event) => {
-                  event.preventDefault();
-                  scrollToId('contact');
-                }}
+                onClick={onClickFor('contact')}
               >
                 Start a project
               </LinkButton>
               <LinkButton
-                href="#work"
+                href={hrefFor('work')}
                 variant="secondary"
                 size="lg"
                 arrow={false}
                 className="max-sm:w-full"
-                onClick={(event) => {
-                  event.preventDefault();
-                  scrollToId('work');
-                }}
+                onClick={onClickFor('work')}
               >
                 See the work
               </LinkButton>

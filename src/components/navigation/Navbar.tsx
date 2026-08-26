@@ -1,12 +1,13 @@
 import { motion, useMotionValueEvent, useScroll } from 'motion/react';
 import { Menu } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { LinkButton } from '@/components/ui/Button';
 import { Wordmark } from '@/components/ui/Wordmark';
 import { MobileMenu } from './MobileMenu';
 import { navLinks } from '@/data/site';
 import { cn } from '@/lib/cn';
-import { scrollToId, scrollToTop } from '@/lib/scroll';
+import { useAnchorNavigate } from '@/lib/navigation';
 import { EASE_EXPO } from '@/lib/motion';
 import { useScrollSpy } from '@/hooks/useScrollSpy';
 import { useReducedMotionSafe } from '@/hooks/useReducedMotionSafe';
@@ -18,7 +19,9 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { scrollY } = useScroll();
-  const active = useScrollSpy(sectionIds);
+  const { onHome, hrefFor, onClickFor } = useAnchorNavigate();
+  // Only spy while the sections it watches are actually mounted.
+  const active = useScrollSpy(sectionIds, onHome);
   const reduced = useReducedMotionSafe();
   const { ref: spotRef, onPointerMove } = useSpotlight<HTMLDivElement>();
 
@@ -83,17 +86,14 @@ export function Navbar() {
               reduced ? undefined : { animation: 'nav-border-glow 4s ease-in-out infinite' }
             }
           >
-            <a
-              href="#top"
+            <Link
+              to="/"
               aria-label="Tejas Naik — home"
-              onClick={(event) => {
-                event.preventDefault();
-                scrollToTop();
-              }}
+              onClick={onHome ? onClickFor('top') : undefined}
               className="relative z-10 rounded-lg transition-opacity duration-200 hover:opacity-85"
             >
               <Wordmark />
-            </a>
+            </Link>
 
             <nav aria-label="Primary" className="relative z-10 hidden lg:block">
               <ul className="flex items-center gap-1">
@@ -103,12 +103,9 @@ export function Navbar() {
                   return (
                     <li key={link.href}>
                       <a
-                        href={link.href}
+                        href={hrefFor(id)}
                         aria-current={isActive ? 'true' : undefined}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          scrollToId(id);
-                        }}
+                        onClick={onClickFor(id)}
                         className={cn(
                           'relative block rounded-full px-4 py-2 text-sm transition-colors duration-200',
                           isActive ? 'text-ink' : 'text-ink-2 hover:text-ink',
@@ -134,15 +131,12 @@ export function Navbar() {
 
             <div className="relative z-10 flex items-center gap-3">
               <LinkButton
-                href="#contact"
+                href={hrefFor('contact')}
                 variant="glow"
                 arrow="right"
                 size="md"
                 className="hidden sm:inline-flex"
-                onClick={(event) => {
-                  event.preventDefault();
-                  scrollToId('contact');
-                }}
+                onClick={onClickFor('contact')}
               >
                 Start a project
               </LinkButton>

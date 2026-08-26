@@ -2,7 +2,7 @@ import { Mail } from 'lucide-react';
 import { Shell } from './Section';
 import { GithubIcon, LinkedinIcon } from '@/components/ui/SocialIcons';
 import { navLinks, site } from '@/data/site';
-import { scrollToId } from '@/lib/scroll';
+import { useAnchorNavigate } from '@/lib/navigation';
 
 const socials = [
   { label: 'GitHub', href: site.social.github, icon: GithubIcon },
@@ -11,6 +11,8 @@ const socials = [
 ] as const;
 
 export function Footer() {
+  const { hrefFor, onClickFor } = useAnchorNavigate();
+
   return (
     <footer className="relative border-t border-hairline">
       <Shell className="py-12">
@@ -27,11 +29,8 @@ export function Footer() {
               {navLinks.map((link) => (
                 <li key={link.href}>
                   <a
-                    href={link.href}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      scrollToId(link.href.replace('#', ''));
-                    }}
+                    href={hrefFor(link.href.replace('#', ''))}
+                    onClick={onClickFor(link.href.replace('#', ''))}
                     className="inline-flex min-h-11 items-center px-1 text-[0.875rem] text-ink-2 transition-colors duration-200 hover:text-ink"
                   >
                     {link.label}

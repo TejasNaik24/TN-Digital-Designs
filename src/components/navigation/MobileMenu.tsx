@@ -5,7 +5,7 @@ import { LinkButton } from '@/components/ui/Button';
 import { Monogram } from '@/components/ui/Wordmark';
 import { navLinks, site } from '@/data/site';
 import { DUR, EASE_EXPO } from '@/lib/motion';
-import { scrollToId } from '@/lib/scroll';
+import { useAnchorNavigate } from '@/lib/navigation';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll';
 import { useReducedMotionSafe } from '@/hooks/useReducedMotionSafe';
@@ -19,6 +19,7 @@ export function MobileMenu({
 }) {
   const reduced = useReducedMotionSafe();
   const panelRef = useRef<HTMLDivElement>(null);
+  const { hrefFor, onClickFor } = useAnchorNavigate();
 
   useFocusTrap(panelRef, open);
   useLockBodyScroll(open);
@@ -32,11 +33,10 @@ export function MobileMenu({
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
 
-  const go = (href: string) => {
-    onClose();
-    // Let the panel finish leaving before the page moves underneath it.
-    window.setTimeout(() => scrollToId(href.replace('#', '')), reduced ? 0 : 260);
-  };
+  // Close first, then move — the delay lets the panel finish leaving before
+  // the page shifts underneath it.
+  const go = (id: string) =>
+    onClickFor(id, { before: onClose, delay: reduced ? 0 : 260 });
 
   return (
     <AnimatePresence>
@@ -89,11 +89,8 @@ export function MobileMenu({
                   className="border-b border-hairline"
                 >
                   <a
-                    href={link.href}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      go(link.href);
-                    }}
+                    href={hrefFor(link.href.replace('#', ''))}
+                    onClick={go(link.href.replace('#', ''))}
                     className="flex items-baseline gap-4 py-5 text-[2rem] font-medium tracking-[-0.03em] text-ink transition-colors duration-200 hover:text-azure"
                   >
                     <span className="mono-label w-6 text-ink-3">
@@ -112,14 +109,11 @@ export function MobileMenu({
               className="mt-10 flex flex-col gap-5"
             >
               <LinkButton
-                href="#contact"
+                href={hrefFor('contact')}
                 variant="glow"
                 size="lg"
                 arrow="right"
-                onClick={(event) => {
-                  event.preventDefault();
-                  go('#contact');
-                }}
+                onClick={go('contact')}
               >
                 Start a project
               </LinkButton>

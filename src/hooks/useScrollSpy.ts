@@ -4,11 +4,30 @@ import { useEffect, useState } from 'react';
  * Marks a section active once it crosses a narrow band through the middle of
  * the viewport, so the nav highlight changes when the section is genuinely
  * being read rather than the instant its top edge appears.
+ *
+ * `enabled` exists because the Navbar is mounted once and survives every route
+ * change, while the sections it watches only exist on the homepage. Without a
+ * dep that actually changes on navigation, this effect ran exactly once for
+ * the whole session, which broke two ways:
+ *
+ *   - first load on /work/vela → no sections → early return → the effect never
+ *     re-ran, so the highlight stayed dead even after navigating home;
+ *   - first load on / → observer attaches → navigate away → it holds detached
+ *     nodes, which never fire, so the last-active link stayed lit on a page
+ *     that has no such section.
  */
-export function useScrollSpy(ids: readonly string[]): string | null {
+export function useScrollSpy(
+  ids: readonly string[],
+  enabled = true,
+): string | null {
   const [active, setActive] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) {
+      setActive(null);
+      return;
+    }
+
     const elements = ids
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
@@ -32,7 +51,7 @@ export function useScrollSpy(ids: readonly string[]): string | null {
 
     for (const element of elements) observer.observe(element);
     return () => observer.disconnect();
-  }, [ids]);
+  }, [ids, enabled]);
 
   return active;
 }
