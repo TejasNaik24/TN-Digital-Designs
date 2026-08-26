@@ -204,124 +204,117 @@ function MarketingLayout() {
   );
 }
 
-/* ── Layout B — a product dashboard ─────────────────────────────────────── */
+/* ── Layout B — a brand/studio site ─────────────────────────────────────── */
 
-const NAV_ITEMS = ['Overview', 'Reports', 'Customers', 'Billing', 'Settings'];
-
-/** Figures inside a fictional product UI — the kind every dashboard mockup
- *  carries. They describe the demo screen, not this studio. */
-const STATS = [
-  { label: 'Revenue', value: '$48.2k' },
-  { label: 'Active users', value: '1,284' },
-  { label: 'Conversion', value: '3.4%' },
+/** Captions inside a fictional studio site. They describe the demo page, not
+ *  this studio — nothing here is a claim about real work. */
+const CAPABILITIES = [
+  { name: 'Identity', note: 'Naming, marks, systems' },
+  { name: 'Websites', note: 'Design and build' },
+  { name: 'Motion', note: 'Film and interaction' },
 ];
 
-function DashboardLayout() {
-  const reduced = useReducedMotionSafe();
-
+/**
+ * A full page composition rather than an app screen: navigation, a headline,
+ * an image band, then a content row. This slot used to hold an analytics
+ * dashboard, which looked good but sold the wrong thing — the hero's entire
+ * job is to say "I build websites", and a chart-and-KPI screen says "I build
+ * SaaS internals" instead. Every element here is something a marketing site
+ * actually has.
+ */
+function StudioLayout() {
   return (
-    <div className="flex h-full gap-[2.6cqw]">
-      <motion.div
-        variants={rise}
-        className="flex w-[19%] shrink-0 flex-col gap-[1.7cqw] rounded-[1.4cqw] border border-white/[0.06] bg-white/[0.025] p-[1.8cqw]"
-      >
-        <div className="flex items-center gap-[1.1cqw]">
-          <Mark size={2.2} />
+    <div className="flex h-full flex-col">
+      <motion.div variants={rise} className="flex items-center justify-between">
+        <div className="flex items-center gap-[1.4cqw]">
+          <Mark size={2.4} />
           <span
-            className="font-semibold tracking-[-0.02em] text-white/85"
-            style={{ fontSize: '1.7cqw' }}
+            className="font-semibold tracking-[-0.02em] text-white/90"
+            style={{ fontSize: '2cqw' }}
           >
-            Vela
+            Aperture
           </span>
         </div>
-        {NAV_ITEMS.map((item, index) => (
-          <div
-            key={item}
-            className={cn(
-              'truncate',
-              index === 0 ? 'font-medium text-white/80' : 'text-white/35',
-            )}
-            style={{ fontSize: '1.5cqw' }}
-          >
-            {item}
-          </div>
-        ))}
+        <div className="flex items-center gap-[2.4cqw] text-white/45">
+          <span style={{ fontSize: '1.5cqw' }}>Work</span>
+          <span style={{ fontSize: '1.5cqw' }}>Studio</span>
+          <span style={{ fontSize: '1.5cqw' }}>Journal</span>
+          <Btn>Let’s talk</Btn>
+        </div>
       </motion.div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-[2.2cqw]">
-        <motion.div variants={rise} className="flex items-center justify-between">
-          <span
-            className="font-semibold tracking-[-0.025em] text-white/90"
-            style={{ fontSize: '2.6cqw' }}
-          >
-            Overview
-          </span>
-          <div className="flex gap-[1.2cqw]">
-            <Btn>Export</Btn>
-            <Btn accent>New report</Btn>
-          </div>
-        </motion.div>
-
-        <div className="grid grid-cols-3 gap-[1.8cqw]">
-          {STATS.map((stat, index) => (
-            <Block key={stat.label} className="p-[1.7cqw]">
-              <div
-                className="truncate text-white/40"
-                style={{ fontSize: '1.4cqw' }}
-              >
-                {stat.label}
-              </div>
-              <div
-                className={cn(
-                  'mt-[0.9cqw] font-semibold tracking-[-0.03em]',
-                  index === 0 ? 'text-azure' : 'text-white/88',
-                )}
-                style={{ fontSize: '3.2cqw' }}
-              >
-                {stat.value}
-              </div>
-            </Block>
-          ))}
+      <div className="mt-[5cqw] flex items-end justify-between gap-[4cqw]">
+        <div className="flex flex-col gap-[0.9cqw] font-semibold tracking-[-0.035em] text-white/92">
+          <Txt size={4.8}>Built for brands</Txt>
+          <Txt size={4.8}>that mean it.</Txt>
         </div>
+        <div className="flex flex-col items-end gap-[1cqw] pb-[0.6cqw] text-right text-white/40">
+          <Txt size={1.5}>An independent design</Txt>
+          <Txt size={1.5}>and technology studio.</Txt>
+        </div>
+      </div>
 
-        <Block className="relative flex-1 overflow-hidden p-[1.7cqw]">
-          <div className="text-white/40" style={{ fontSize: '1.4cqw' }}>
-            Last 30 days
+      {/* Image band — three plates reading as photography, not placeholders. */}
+      <div className="mt-[3.4cqw] grid grid-cols-[1.6fr_1fr_1fr] gap-[1.6cqw]">
+        <Block className="relative overflow-hidden" style={{ height: '17cqw' }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(75% 80% at 25% 15%, rgb(77 141 255 / 0.34), transparent 72%), radial-gradient(60% 70% at 90% 95%, rgb(139 92 246 / 0.3), transparent 74%)',
+            }}
+          />
+          <div className="absolute inset-x-0 bottom-0 h-[52%] bg-[linear-gradient(to_top,rgb(5_8_16/0.88),transparent)]" />
+          <div className="absolute inset-x-[6%] bottom-[8%]">
+            <div className="font-medium text-white/85" style={{ fontSize: '1.6cqw' }}>
+              Halden Optics
+            </div>
+            <div className="text-white/35" style={{ fontSize: '1.3cqw' }}>
+              Brand & site
+            </div>
           </div>
-          <svg
-            viewBox="0 0 300 90"
-            preserveAspectRatio="none"
-            className="absolute inset-x-[4%] bottom-[8%] h-[58%] w-[92%]"
-          >
-            <defs>
-              <linearGradient id="mini-line" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0" stopColor="var(--color-azure)" />
-                <stop offset="1" stopColor="var(--color-violet)" />
-              </linearGradient>
-              <linearGradient id="mini-fill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="var(--color-azure)" stopOpacity="0.28" />
-                <stop offset="1" stopColor="var(--color-azure)" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <motion.path
-              d="M0 74 C 26 70, 40 46, 62 44 S 100 60, 124 50 S 166 20, 192 26 S 236 14, 262 8 L 300 4"
-              fill="none"
-              stroke="url(#mini-line)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              initial={{ pathLength: reduced ? 1 : 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 1 }}
-              transition={{ duration: reduced ? 0 : 1.5, ease: EASE_EXPO, delay: 0.35 }}
-            />
-            <motion.path
-              d="M0 74 C 26 70, 40 46, 62 44 S 100 60, 124 50 S 166 20, 192 26 S 236 14, 262 8 L 300 4 L 300 90 L 0 90 Z"
-              fill="url(#mini-fill)"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: reduced ? 0 : 1.1 }}
-            />
-          </svg>
         </Block>
+        <Block className="relative overflow-hidden" style={{ height: '17cqw' }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(80% 70% at 60% 25%, rgb(34 211 238 / 0.24), transparent 74%)',
+            }}
+          />
+          <div className="absolute inset-x-[9%] bottom-[9%] text-white/70" style={{ fontSize: '1.35cqw' }}>
+            Marlow
+          </div>
+        </Block>
+        <Block className="relative overflow-hidden" style={{ height: '17cqw' }}>
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'radial-gradient(80% 70% at 40% 30%, rgb(240 179 87 / 0.22), transparent 74%)',
+            }}
+          />
+          <div className="absolute inset-x-[9%] bottom-[9%] text-white/70" style={{ fontSize: '1.35cqw' }}>
+            Ferrous
+          </div>
+        </Block>
+      </div>
+
+      {/* Content row */}
+      <div className="mt-auto grid grid-cols-3 gap-[1.8cqw] border-t border-white/[0.07] pt-[2.4cqw]">
+        {CAPABILITIES.map((item) => (
+          <motion.div key={item.name} variants={rise} className="flex flex-col">
+            <span
+              className="font-medium tracking-[-0.02em] text-white/85"
+              style={{ fontSize: '1.7cqw' }}
+            >
+              {item.name}
+            </span>
+            <span className="mt-[0.5cqw] text-white/35" style={{ fontSize: '1.3cqw' }}>
+              {item.note}
+            </span>
+          </motion.div>
+        ))}
       </div>
     </div>
   );
@@ -399,9 +392,12 @@ function EditorialLayout() {
 
 /* ── Cycler ─────────────────────────────────────────────────────────────── */
 
+/** Three kinds of website, not three kinds of screen — the cycle is the hero's
+ *  argument that this studio builds range, so each entry has to read
+ *  unmistakably as a *site*. */
 export const buildLayouts = [
   { id: 'marketing', label: 'marketing-site', Component: MarketingLayout },
-  { id: 'dashboard', label: 'product-app', Component: DashboardLayout },
+  { id: 'studio', label: 'studio-site', Component: StudioLayout },
   { id: 'editorial', label: 'portfolio', Component: EditorialLayout },
 ] as const;
 

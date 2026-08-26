@@ -20,7 +20,10 @@ export function Footer() {
           </p>
 
           <nav aria-label="Footer">
-            <ul className="flex flex-wrap gap-x-7 gap-y-3">
+            {/* -my-2 py-3 keeps these visually where they were while giving
+                each link a 44px tap target — they were 18px tall, which is
+                unusable on a phone. */}
+            <ul className="-my-2 flex flex-wrap gap-x-6">
               {navLinks.map((link) => (
                 <li key={link.href}>
                   <a
@@ -29,7 +32,7 @@ export function Footer() {
                       event.preventDefault();
                       scrollToId(link.href.replace('#', ''));
                     }}
-                    className="text-[0.875rem] text-ink-2 transition-colors duration-200 hover:text-ink"
+                    className="inline-flex min-h-11 items-center px-1 text-[0.875rem] text-ink-2 transition-colors duration-200 hover:text-ink"
                   >
                     {link.label}
                   </a>
@@ -50,7 +53,7 @@ export function Footer() {
                   {...(external
                     ? { target: '_blank', rel: 'noreferrer noopener' }
                     : {})}
-                  className="grid size-9 place-items-center rounded-full border border-hairline text-ink-3 transition-[color,border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-hairline-strong hover:text-ink"
+                  className="grid size-11 place-items-center rounded-full border border-hairline text-ink-3 transition-[color,border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-hairline-strong hover:text-ink"
                 >
                   <Icon className="size-4" strokeWidth={1.75} aria-hidden="true" />
                 </a>

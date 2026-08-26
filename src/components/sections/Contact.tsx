@@ -50,9 +50,9 @@ export function Contact() {
               <div className="mt-10 flex flex-col gap-4">
                 <a
                   href={`mailto:${site.email}`}
-                  className="group inline-flex w-fit items-center gap-3 text-[1.0625rem] text-ink transition-colors duration-200 hover:text-azure"
+                  className="group inline-flex w-fit items-center gap-3 py-1 text-[1.0625rem] text-ink transition-colors duration-200 hover:text-azure"
                 >
-                  <span className="grid size-9 place-items-center rounded-full border border-hairline bg-elevated text-ink-3 transition-colors duration-200 group-hover:border-azure/30 group-hover:text-azure">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-full border border-hairline bg-elevated text-ink-3 transition-colors duration-200 group-hover:border-azure/30 group-hover:text-azure">
                     <Mail className="size-4" strokeWidth={1.75} aria-hidden="true" />
                   </span>
                   {site.email}
@@ -68,7 +68,7 @@ export function Contact() {
                         target="_blank"
                         rel="noreferrer noopener"
                         aria-label={channel.label}
-                        className="grid size-9 place-items-center rounded-full border border-hairline bg-elevated text-ink-3 transition-[color,border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-hairline-strong hover:text-ink"
+                        className="grid size-11 place-items-center rounded-full border border-hairline bg-elevated text-ink-3 transition-[color,border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-hairline-strong hover:text-ink"
                       >
                         <Icon className="size-4" strokeWidth={1.75} aria-hidden="true" />
                       </a>

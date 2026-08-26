@@ -75,13 +75,19 @@ function Nav({
 
 function EditorialVisual({ accent, name }: VisualProps) {
   /** Massed volumes, read as an elevation. Enough form to say "architecture"
-   *  without pretending to be a photograph. */
+   *  without pretending to be a photograph.
+   *
+   *  `windows` is what stops this reading as a bar chart — five plain
+   *  rectangles of stepped height is exactly a column chart, which is the
+   *  wrong signal on a card whose whole job is to say "architecture studio".
+   *  A few horizontal floor lines and a lit window turn the same shapes into
+   *  buildings. */
   const massing = [
-    { left: '8%', width: '17%', height: '46%', opacity: 0.1 },
-    { left: '25%', width: '13%', height: '68%', opacity: 0.16 },
-    { left: '38%', width: '22%', height: '88%', opacity: 0.24 },
-    { left: '60%', width: '15%', height: '58%', opacity: 0.14 },
-    { left: '75%', width: '19%', height: '36%', opacity: 0.09 },
+    { left: '8%', width: '17%', height: '46%', opacity: 0.1, floors: 3, lit: false },
+    { left: '25%', width: '13%', height: '68%', opacity: 0.16, floors: 5, lit: true },
+    { left: '38%', width: '22%', height: '88%', opacity: 0.24, floors: 6, lit: false },
+    { left: '60%', width: '15%', height: '58%', opacity: 0.14, floors: 4, lit: true },
+    { left: '75%', width: '19%', height: '36%', opacity: 0.09, floors: 2, lit: false },
   ];
 
   return (
@@ -143,14 +149,27 @@ function EditorialVisual({ accent, name }: VisualProps) {
             {massing.map((block, index) => (
               <div
                 key={index}
-                className="absolute bottom-0 border-t border-white/[0.14]"
+                className="absolute bottom-0 flex flex-col justify-end gap-[8%] overflow-hidden border-t border-white/[0.14] px-[14%] pb-[10%]"
                 style={{
                   left: block.left,
                   width: block.width,
                   height: block.height,
                   background: `rgb(255 255 255 / ${block.opacity})`,
                 }}
-              />
+              >
+                {Array.from({ length: block.floors }).map((_, floor) => (
+                  <span
+                    key={floor}
+                    className="h-px w-full shrink-0"
+                    style={{
+                      background:
+                        block.lit && floor === 1
+                          ? `${accent}88`
+                          : 'rgb(255 255 255 / 0.16)',
+                    }}
+                  />
+                ))}
+              </div>
             ))}
           </div>
           <div className="absolute inset-x-0 bottom-0 h-[30%] bg-[linear-gradient(to_top,rgb(5_8_16/0.92),transparent)]" />
@@ -390,7 +409,10 @@ function BusinessVisual({ accent, name }: VisualProps) {
     <div className="flex h-full flex-col p-[3.6cqw]">
       <Nav accent={accent} name={name} links={['Services', 'About']} cta="Talk to us" />
 
-      <div className="mt-[4cqw] flex gap-[3.5cqw]">
+      {/* flex-1 so this row absorbs the leftover height. Without it the row
+          took its natural height and `mt-auto` on the footer shoved the
+          remainder into one dead gap in the middle of the card. */}
+      <div className="mt-[4cqw] flex flex-1 items-center gap-[3.5cqw]">
         <div className="flex w-[48%] flex-col justify-center">
           <div
             className="font-semibold leading-[1.14] tracking-[-0.035em] text-white/90"
@@ -436,21 +458,96 @@ function BusinessVisual({ accent, name }: VisualProps) {
         </div>
       </div>
 
-      {/* Proof row — deliberately abstract. Inventing logos here would mean
-          inventing clients. */}
-      <div className="mt-auto flex items-center gap-[2.6cqw] border-t border-white/[0.06] pt-[2.2cqw]">
+      {/* Footer row. This used to be a "Trusted by" label followed by four grey
+          bars standing in for logos — which read as a skeleton loader, the one
+          thing these previews must never look like, and hinted at clients that
+          don't exist. Real words about the fictional firm instead: it reads as
+          a finished page and claims nothing. */}
+      <div className="mt-auto flex items-center justify-between border-t border-white/[0.06] pt-[2.2cqw]">
         <span
-          className="shrink-0 uppercase tracking-[0.18em] text-white/25"
+          className="uppercase tracking-[0.18em] text-white/30"
           style={{ fontSize: '1.15cqw' }}
         >
-          Trusted by
+          Offices in Chicago & Toronto
         </span>
-        {[0, 1, 2, 3].map((index) => (
+        <span
+          className="font-medium"
+          style={{ fontSize: '1.35cqw', color: accent, opacity: 0.85 }}
+        >
+          Book a consultation →
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Westgate Health — clinic ───────────────────────────────────────────── */
+
+const CARE = [
+  { name: 'Family medicine', note: 'Same-week appointments' },
+  { name: 'Physiotherapy', note: 'Referral not required' },
+];
+
+function HealthcareVisual({ accent, name }: VisualProps) {
+  return (
+    <div className="flex h-full flex-col p-[3.6cqw]">
+      <Nav accent={accent} name={name} links={['Care', 'Team']} cta="Book" />
+
+      <div className="mt-[4cqw] flex flex-1 items-center gap-[3.2cqw]">
+        <div className="flex w-[52%] flex-col">
           <div
-            key={index}
-            className="h-[1.6cqw] flex-1 rounded-[0.4cqw] bg-white/[0.07]"
-          />
-        ))}
+            className="font-semibold leading-[1.14] tracking-[-0.035em] text-white/90"
+            style={{ fontSize: '3.4cqw' }}
+          >
+            Care that starts
+            <br />
+            with listening.
+          </div>
+          <div
+            className="mt-[1.6cqw] leading-[1.5] text-white/38"
+            style={{ fontSize: '1.5cqw' }}
+          >
+            A family practice in the west end,
+            <br />
+            accepting new patients.
+          </div>
+          <span
+            className="mt-[2.2cqw] w-fit rounded-full px-[2.4cqw] py-[1.1cqw] font-medium leading-none text-[#04231f]"
+            style={{ fontSize: '1.5cqw', background: accent }}
+          >
+            Book an appointment
+          </span>
+        </div>
+
+        <div className="flex flex-1 flex-col gap-[1.3cqw]">
+          {CARE.map((item) => (
+            <div key={item.name} className={cn(surface, 'p-[1.6cqw]')}>
+              <div
+                className="truncate font-medium text-white/82"
+                style={{ fontSize: '1.5cqw' }}
+              >
+                {item.name}
+              </div>
+              <div className="text-white/34" style={{ fontSize: '1.25cqw' }}>
+                {item.note}
+              </div>
+            </div>
+          ))}
+          <div
+            className={cn(surface, 'flex items-center justify-between p-[1.6cqw]')}
+            style={{ background: `${accent}14` }}
+          >
+            <span className="text-white/60" style={{ fontSize: '1.3cqw' }}>
+              Next available
+            </span>
+            <span
+              className="font-medium"
+              style={{ fontSize: '1.4cqw', color: accent }}
+            >
+              Tomorrow
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -463,6 +560,7 @@ const visuals: Record<ProjectVisualKind, (props: VisualProps) => React.JSX.Eleme
   product: ProductVisual,
   hospitality: HospitalityVisual,
   business: BusinessVisual,
+  healthcare: HealthcareVisual,
 };
 
 export function ProjectVisual({

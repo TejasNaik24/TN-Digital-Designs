@@ -61,8 +61,10 @@
   --text-title--line-height: 1.18;
   --text-title--letter-spacing: -0.022em;
 
+  /* 1.68 rather than 1.62: the lede sits under a tight display headline, and
+     the extra air is what stops the pairing reading as one dense block. */
   --text-lede: clamp(1.0625rem, 1rem + 0.34vw, 1.25rem);
-  --text-lede--line-height: 1.62;
+  --text-lede--line-height: 1.68;
   --text-lede--letter-spacing: -0.011em;
 
   --text-label: 0.6875rem;
@@ -226,6 +228,25 @@
   font-weight: 500;
 }
 
+/* The one card surface for the whole site.
+   Before this existed, cards carried four different backgrounds (surface/60,
+   /70, /20 and a bespoke gradient) with three different shadows — close
+   enough to look accidental rather than intentional. Every panel that should
+   read as "elevated content" uses this: services, projects, the contact form.
+   Sits meaningfully above `--color-canvas`, so a card never dissolves into
+   the page behind it. */
+@utility card-surface {
+  background: linear-gradient(
+    180deg,
+    rgb(20 28 48 / 0.78),
+    rgb(11 16 28 / 0.62)
+  );
+  border: 1px solid var(--color-hairline);
+  box-shadow:
+    0 1px 0 0 rgb(180 205 255 / 0.07) inset,
+    0 20px 44px -30px rgb(0 0 0 / 0.9);
+}
+
 /* A 1px top edge highlight — the cheapest way to make a surface feel physical. */
 @utility edge-light {
   position: relative;
@@ -350,7 +371,13 @@
     inset: 0;
     border-radius: inherit;
     pointer-events: none;
-    opacity: 0;
+    /* Not fully off at rest. This is the site's primary CTA sitting directly
+       beside a secondary button of the same shape and darkness — with the
+       glow at zero until hover the two were indistinguishable, and the page
+       lost its most important piece of hierarchy. A faint permanent accent
+       marks it as the primary action; hover still takes it the rest of the
+       way. */
+    opacity: 0.34;
     transition: opacity 280ms var(--ease-expo);
   }
 
@@ -441,26 +468,27 @@
   }
 }
 
-/** The navbar's own border breathing — separate from, and faster than, the
- *  ambient halo behind it (20s) so it reads as the pill's signature rather
- *  than a repeat of the background rhythm. box-shadow only: it composites
- *  fine under the pill's own `overflow-hidden` (same trick as the primary
- *  button's outer glow in Button.tsx) without clipping. */
+/** The navbar's own border breathing.
+ *
+ *  Deliberately restrained: the header sits above the hero for the entire
+ *  visit, so anything with real presence here competes with the headline
+ *  instead of supporting it. This reads as a faint shift in the edge light,
+ *  not as a glowing object. box-shadow only, so it composites fine under the
+ *  pill's own `overflow-hidden` without clipping. */
 @keyframes nav-border-glow {
   0%,
   100% {
     box-shadow:
-      0 1px 0 0 rgb(180 205 255 / 0.12) inset,
+      0 1px 0 0 rgb(180 205 255 / 0.1) inset,
       0 24px 60px -26px rgb(0 0 0 / 0.9),
-      0 0 0 1px rgb(77 141 255 / 0.2),
-      0 0 22px 1px rgb(77 141 255 / 0.16);
+      0 0 0 1px rgb(77 141 255 / 0.08);
   }
   50% {
     box-shadow:
-      0 1px 0 0 rgb(180 205 255 / 0.12) inset,
+      0 1px 0 0 rgb(180 205 255 / 0.1) inset,
       0 24px 60px -26px rgb(0 0 0 / 0.9),
-      0 0 0 1.5px rgb(99 102 241 / 0.55),
-      0 0 34px 3px rgb(139 92 246 / 0.4);
+      0 0 0 1px rgb(99 102 241 / 0.22),
+      0 0 18px 0 rgb(139 92 246 / 0.14);
   }
 }
 

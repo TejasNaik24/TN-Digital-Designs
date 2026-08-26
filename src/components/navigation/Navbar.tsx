@@ -49,7 +49,7 @@ export function Navbar() {
           className="pointer-events-none absolute left-1/2 top-3 h-24 w-[min(96vw,var(--shell))] -translate-x-1/2 rounded-full sm:top-5"
           style={{
             background:
-              'radial-gradient(60% 100% at 50% 45%, rgb(77 141 255 / 0.24), rgb(139 92 246 / 0.1) 55%, transparent 75%)',
+              'radial-gradient(58% 100% at 50% 45%, rgb(77 141 255 / 0.1), rgb(139 92 246 / 0.045) 55%, transparent 75%)',
             filter: 'blur(30px)',
             animation: reduced ? undefined : 'breathe 20s var(--ease-out-soft) infinite',
             opacity: reduced ? 0.5 : undefined,
@@ -121,7 +121,7 @@ export function Navbar() {
                         <span
                           aria-hidden="true"
                           className={cn(
-                            'absolute inset-0 -z-10 rounded-full border border-hairline-strong bg-white/[0.06] transition-opacity duration-300 ease-out',
+                            'absolute inset-0 -z-10 rounded-full border border-azure/30 bg-azure/[0.1] transition-opacity duration-300 ease-out',
                             isActive ? 'opacity-100' : 'opacity-0',
                           )}
                         />

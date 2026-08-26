@@ -15,11 +15,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
         ref={ref}
         onPointerMove={onPointerMove}
         className={cn(
-          'surface-card group h-full rounded-panel p-7 sm:p-8',
-          // A real surface, not a tint: top-edge highlight plus a cast shadow
-          // so the card sits above the section rather than printed on it.
-          'border border-hairline bg-[linear-gradient(180deg,rgb(18_25_42/0.9),rgb(10_15_27/0.75))]',
-          'shadow-[0_1px_0_0_rgb(180_205_255/0.06)_inset,0_18px_40px_-28px_rgb(0_0_0/0.9)]',
+          'surface-card card-surface group h-full rounded-panel p-7 sm:p-8',
           'transition-[transform,border-color,box-shadow] duration-[320ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
           'hover:-translate-y-1 hover:border-hairline-strong',
           'hover:shadow-[0_1px_0_0_rgb(180_205_255/0.12)_inset,0_28px_60px_-30px_rgb(0_0_0/0.95)]',

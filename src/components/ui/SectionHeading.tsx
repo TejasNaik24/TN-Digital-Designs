@@ -41,12 +41,20 @@ export function SectionHeading({
         <MonoLabel>{label}</MonoLabel>
         <h2
           id={id}
-          className="mt-5 text-title font-medium text-ink sm:text-display"
+          className="mt-6 text-title font-medium text-ink sm:text-display"
         >
           {title}
         </h2>
         {lede && (
-          <p className={cn('mt-5 text-lede text-ink-2', centered && 'mx-auto')}>
+          // max-w-xl, not the parent's max-w-2xl: the heading wants a wide
+          // measure for its display type, the lede wants ~65 characters for
+          // comfortable reading. They shouldn't share one width.
+          <p
+            className={cn(
+              'mt-6 max-w-xl text-lede text-ink-2',
+              centered && 'mx-auto',
+            )}
+          >
             {lede}
           </p>
         )}

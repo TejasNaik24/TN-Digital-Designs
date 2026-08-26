@@ -17,7 +17,7 @@ export const services: Service[] = [
   {
     id: 'websites',
     label: 'Websites',
-    title: 'Sites that earn trust in seconds',
+    title: 'Turn visitors into customers.',
     description:
       'Marketing sites and landing pages that load fast, read clearly, and turn visitors into enquiries instead of bounces.',
     icon: Layers,
@@ -26,7 +26,7 @@ export const services: Service[] = [
   {
     id: 'applications',
     label: 'Web Applications',
-    title: 'Real software, not a page builder',
+    title: 'More than a pretty page.',
     description:
       'Dashboards, portals, booking systems, and internal tools — with an actual backend, real auth, and data you can rely on.',
     icon: Boxes,
@@ -35,7 +35,7 @@ export const services: Service[] = [
   {
     id: 'ai',
     label: 'AI Features',
-    title: 'AI where it genuinely helps',
+    title: 'AI where it actually helps.',
     description:
       'Chat, intelligent search, recommendations, and automation — wired into your product properly, and only where it makes the product better.',
     icon: Sparkles,
@@ -44,7 +44,7 @@ export const services: Service[] = [
   {
     id: 'experiences',
     label: 'Interactive',
-    title: 'The part people remember',
+    title: 'Give people something to remember.',
     description:
       'Motion, scroll choreography, and micro-interactions that make a site feel considered — the difference between looking at a site and remembering it.',
     icon: Wand2,

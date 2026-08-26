@@ -14,7 +14,7 @@ export function Process() {
   const railVisible = useRevealOnce(railRef);
 
   return (
-    <Section id="process" labelledBy="process-heading">
+    <Section id="process" labelledBy="process-heading" tone="deep">
       <Shell>
         <SectionHeading
           id="process-heading"

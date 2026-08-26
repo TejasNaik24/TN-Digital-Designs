@@ -1,6 +1,6 @@
-import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { Section, Shell } from '@/components/layout/Section';
+import { LinkButton } from '@/components/ui/Button';
 import { Reveal } from '@/components/ui/Reveal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { CaseStudyModal } from '@/components/projects/CaseStudyModal';
@@ -10,8 +10,16 @@ import { cn } from '@/lib/cn';
 import { scrollToId } from '@/lib/scroll';
 import { useSpotlight } from '@/hooks/useSpotlight';
 
-/** The last card in the grid: an empty frame, waiting. */
-function OpenSlotCard() {
+/**
+ * The hand-off from "here is what I can build" to "let's build yours".
+ *
+ * This used to be one more card inside the project grid, where it read as a
+ * fifth project rather than as an invitation. Full width, its own light, and
+ * the site's real CTA button — this is the point in the page where a founder
+ * has just finished being convinced, so it needs to be the obvious next step,
+ * not a tile they scan past.
+ */
+function OpenSlotBand() {
   const { ref, onPointerMove } = useSpotlight<HTMLDivElement>();
 
   return (
@@ -19,51 +27,45 @@ function OpenSlotCard() {
       ref={ref}
       onPointerMove={onPointerMove}
       className={cn(
-        'surface-card group relative flex h-full min-h-[19rem] flex-col justify-center overflow-hidden rounded-panel p-7 sm:p-9',
-        'border border-dashed border-[rgb(150_178_255/0.16)] bg-surface/20',
-        'transition-[transform,border-color] duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
-        'hover:-translate-y-1 hover:border-[rgb(150_178_255/0.32)]',
-        'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-azure has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-canvas',
+        'surface-card relative overflow-hidden rounded-panel',
+        'border border-dashed border-[rgb(150_178_255/0.2)] bg-[linear-gradient(180deg,rgb(20_28_48/0.6),rgb(11_16_28/0.4))]',
+        'px-7 py-10 sm:px-10 sm:py-12',
       )}
     >
-      {/* An empty browser frame, echoing the previews beside it — it makes the
-          slot read as reserved rather than as a card that failed to load. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-9 top-9 hidden overflow-hidden rounded-xl border border-hairline-soft opacity-60 transition-opacity duration-500 group-hover:opacity-100 sm:block"
-      >
-        <div className="flex h-7 items-center gap-1.5 border-b border-hairline-soft px-3">
-          <span className="size-1 rounded-full bg-ink-4/60" />
-          <span className="size-1 rounded-full bg-ink-4/60" />
-          <span className="size-1 rounded-full bg-ink-4/60" />
-        </div>
-        <div className="h-16 bg-[linear-gradient(180deg,rgb(150_178_255/0.04),transparent)]" />
-      </div>
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            'radial-gradient(80% 130% at 50% 0%, rgb(77 141 255 / 0.13), transparent 70%)',
+        }}
+      />
 
-      <div className="relative z-10 sm:mt-24">
-        <span className="mono-label text-ink-3">Open slot</span>
-        <h3 className="mt-5 text-[1.625rem] font-medium leading-[1.15] tracking-[-0.03em] text-ink">
-          <button
-            type="button"
-            onClick={() => scrollToId('contact')}
-            className="text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
-          >
+      <div className="relative z-10 flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between md:gap-12">
+        <div>
+          <span className="mono-label text-ink-3">Open slot</span>
+          <h3 className="mt-5 text-title font-medium tracking-[-0.025em] text-ink">
             Your company could be next.
-          </button>
-        </h3>
-        <p className="mt-3 max-w-sm text-[0.9375rem] leading-relaxed text-ink-2">
-          I take on a small number of projects at a time so each one gets proper
-          attention. Tell me what you’re building.
-        </p>
+          </h3>
+          <p className="mt-3.5 max-w-lg text-[0.9375rem] leading-relaxed text-ink-2">
+            I take on a small number of projects at a time so each one gets
+            proper attention. Tell me what you’re building.
+          </p>
+        </div>
 
-        <span className="mt-7 inline-flex items-center gap-2.5 text-sm font-medium text-azure">
+        <LinkButton
+          href="#contact"
+          variant="glow"
+          size="lg"
+          arrow="right"
+          className="shrink-0 max-sm:w-full"
+          onClick={(event) => {
+            event.preventDefault();
+            scrollToId('contact');
+          }}
+        >
           Start a project
-          <ArrowRight
-            aria-hidden="true"
-            className="size-4 transition-transform duration-[320ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1"
-            strokeWidth={2}
-          />
-        </span>
+        </LinkButton>
       </div>
     </div>
   );
@@ -73,7 +75,7 @@ export function Work() {
   const [active, setActive] = useState<Project | null>(null);
 
   return (
-    <Section id="work" labelledBy="work-heading" space="loose">
+    <Section id="work" labelledBy="work-heading" space="loose" ambient>
       <Shell>
         <SectionHeading
           id="work-heading"
@@ -90,11 +92,13 @@ export function Work() {
               </Reveal>
             </div>
           ))}
-
-          <Reveal className="h-full">
-            <OpenSlotCard />
-          </Reveal>
         </div>
+
+        <Reveal>
+          <div className="mt-4">
+            <OpenSlotBand />
+          </div>
+        </Reveal>
       </Shell>
 
       <CaseStudyModal project={active} onClose={() => setActive(null)} />

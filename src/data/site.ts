@@ -37,8 +37,8 @@ export const site = {
     'Your website is often the first interaction someone has with your company. It should feel like it.',
 
   contact: {
-    heading: ['Have a project in mind?', 'Let’s build something worth remembering.'],
-    lede: 'Tell me what you’re working on and what you need it to do. I read every message and reply personally, usually within a day.',
+    heading: ['Tell me what you’re building.', 'I’ll take it from there.'],
+    lede: 'I personally review every project enquiry and usually reply within a day. No sales team, no discovery-call funnel — just a straight answer about whether I’m the right fit.',
   },
 } as const;
 
@@ -48,5 +48,6 @@ export const navLinks = [
   { label: 'Services', href: '#services' },
   { label: 'Work', href: '#work' },
   { label: 'Process', href: '#process' },
+  { label: 'Questions', href: '#faq' },
   { label: 'Contact', href: '#contact' },
 ] as const;

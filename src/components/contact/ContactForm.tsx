@@ -99,15 +99,20 @@ export function ContactForm() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: EASE_EXPO }}
-        className="flex min-h-[28rem] flex-col items-start justify-center gap-5 rounded-panel border border-hairline bg-surface/70 p-8 sm:p-10"
+        className="card-surface flex min-h-[28rem] flex-col items-start justify-center gap-5 rounded-panel p-8 sm:p-10"
       >
-        <span className="grid size-12 place-items-center rounded-full border border-aqua/30 bg-aqua/10 text-aqua">
+        <motion.span
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.55, delay: 0.08, ease: EASE_EXPO }}
+          className="grid size-12 place-items-center rounded-full border border-aqua/30 bg-aqua/10 text-aqua shadow-[0_0_28px_-6px_rgb(34_211_238/0.5)]"
+        >
           <Check className="size-5" strokeWidth={2} />
-        </span>
-        <h3 className="text-title font-medium text-ink">Message sent.</h3>
+        </motion.span>
+        <h3 className="text-title font-medium text-ink">Message received.</h3>
         <p className="max-w-md text-ink-2">
-          Thanks {values.name.split(' ')[0]} — I’ve got it. You’ll hear back from me
-          at {values.email}, usually within a day.
+          Thanks {values.name.split(' ')[0]} — it’s with me now. I’ll get back to
+          you at {values.email} shortly, usually within a day.
         </p>
         <Button
           variant="secondary"
@@ -126,7 +131,7 @@ export function ContactForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="rounded-panel border border-hairline bg-surface/70 p-6 sm:p-8"
+      className="card-surface rounded-panel p-6 sm:p-8"
     >
       <div className="grid gap-5 sm:grid-cols-2">
         <TextField
@@ -231,15 +236,16 @@ export function ContactForm() {
         )}
       </AnimatePresence>
 
-      <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="order-2 text-[0.8125rem] text-ink-3 sm:order-1">
-          {isContactConfigured
-            ? 'I reply personally, usually within a day.'
-            : 'EmailJS not configured yet — see .env.example.'}
-        </p>
+      <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-end">
+        {!isContactConfigured && (
+          <p className="order-2 text-[0.8125rem] text-ink-3 sm:order-1">
+            EmailJS not configured yet — see .env.example.
+          </p>
+        )}
 
         <Button
           type="submit"
+          variant="glow"
           size="lg"
           arrow={status === 'submitting' ? false : 'right'}
           disabled={status === 'submitting'}

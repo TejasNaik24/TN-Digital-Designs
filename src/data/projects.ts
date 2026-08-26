@@ -10,7 +10,12 @@
  * and set `kind: 'client'` — the card and modal already handle it.
  */
 
-export type ProjectVisualKind = 'editorial' | 'product' | 'hospitality' | 'business';
+export type ProjectVisualKind =
+  | 'editorial'
+  | 'product'
+  | 'hospitality'
+  | 'business'
+  | 'healthcare';
 
 export type Project = {
   id: string;
@@ -108,5 +113,23 @@ export const projects: Project[] = [
     stack: ['React', 'TypeScript', 'Tailwind'],
     visual: 'business',
     accent: '#6366f1',
+  },
+  {
+    id: 'westgate-health',
+    name: 'Westgate Health',
+    kind: 'concept',
+    industry: 'Healthcare practice',
+    summary:
+      'A clinic site built around the two things patients arrive needing: reassurance, and an appointment.',
+    brief:
+      'Healthcare sites tend to be either sterile or overwhelming — stock photography and a wall of departments. This explores a calmer route: plain language, obvious next steps, and a booking path that someone anxious can follow on a phone without thinking about it.',
+    demonstrates: [
+      'Calm, legible design under a trust-critical brief',
+      'Booking as the primary path, not a buried link',
+      'Accessible contrast and type at every size',
+    ],
+    stack: ['React', 'TypeScript', 'Node.js'],
+    visual: 'healthcare',
+    accent: '#22d3ee',
   },
 ];

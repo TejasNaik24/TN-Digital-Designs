@@ -35,8 +35,7 @@ export function ProjectCard({
       onPointerMove={onPointerMove}
       style={{ '--glow': project.accent } as React.CSSProperties}
       className={cn(
-        'surface-card group relative flex h-full flex-col overflow-hidden rounded-panel',
-        'border border-hairline bg-surface/60',
+        'surface-card card-surface group relative flex h-full flex-col overflow-hidden rounded-panel',
         'transition-[transform,border-color] duration-[380ms] ease-[cubic-bezier(0.16,1,0.3,1)]',
         'hover:-translate-y-1 hover:border-hairline-strong',
         'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-azure has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-canvas',
