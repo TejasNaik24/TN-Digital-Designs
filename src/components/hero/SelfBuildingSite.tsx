@@ -1,10 +1,10 @@
-import { AnimatePresence, motion, useInView } from 'motion/react';
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
-import { cn } from '@/lib/cn';
-import { projects } from '@/data/projects';
-import { ProjectVisual } from '@/components/projects/ProjectVisual';
-import { EASE_EXPO } from '@/lib/motion';
-import { useReducedMotionSafe } from '@/hooks/useReducedMotionSafe';
+import { AnimatePresence, motion, useInView } from "motion/react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { cn } from "@/lib/cn";
+import { projects } from "@/data/projects";
+import { ProjectVisual } from "@/components/projects/ProjectVisual";
+import { EASE_EXPO } from "@/lib/motion";
+import { useReducedMotionSafe } from "@/hooks/useReducedMotionSafe";
 
 /**
  * A miniature website that builds itself, then dissolves and rebuilds as a
@@ -47,10 +47,10 @@ const rise = {
  * rather than scaleX — scaling would squash the glyphs.
  */
 const setType = {
-  hidden: { opacity: 0, clipPath: 'inset(0 100% 0 0)' },
+  hidden: { opacity: 0, clipPath: "inset(0 100% 0 0)" },
   visible: {
     opacity: 1,
-    clipPath: 'inset(0 0% 0 0)',
+    clipPath: "inset(0 0% 0 0)",
     transition: { duration: 0.45, ease: EASE_EXPO },
   },
 };
@@ -70,7 +70,7 @@ function Txt({ children, size = 1.7, className, style }: TxtProps) {
   return (
     <motion.div
       variants={setType}
-      className={cn('whitespace-nowrap leading-[1.15]', className)}
+      className={cn("whitespace-nowrap leading-[1.15]", className)}
       style={{ fontSize: `${size}cqw`, ...style }}
     >
       {children}
@@ -91,7 +91,7 @@ function Block({
     <motion.div
       variants={rise}
       className={cn(
-        'rounded-[1.2cqw] border border-white/[0.07] bg-white/[0.035]',
+        "rounded-[1.2cqw] border border-white/[0.07] bg-white/[0.035]",
         className,
       )}
       style={style}
@@ -112,12 +112,12 @@ function Btn({
     <motion.div
       variants={rise}
       className={cn(
-        'flex items-center rounded-full px-[2.4cqw] py-[1.1cqw] font-medium leading-none',
+        "flex items-center rounded-full px-[2.4cqw] py-[1.1cqw] font-medium leading-none",
         accent
-          ? 'bg-[linear-gradient(90deg,var(--color-azure),var(--color-indigo))] text-white'
-          : 'border border-white/[0.14] text-white/70',
+          ? "bg-[linear-gradient(90deg,var(--color-azure),var(--color-indigo))] text-white"
+          : "border border-white/[0.14] text-white/70",
       )}
-      style={{ fontSize: '1.5cqw' }}
+      style={{ fontSize: "1.5cqw" }}
     >
       {children}
     </motion.div>
@@ -143,15 +143,15 @@ function MarketingLayout() {
           <Mark />
           <span
             className="font-semibold tracking-[-0.02em] text-white/90"
-            style={{ fontSize: '2cqw' }}
+            style={{ fontSize: "2cqw" }}
           >
             Lumen
           </span>
         </div>
         <div className="flex items-center gap-[2.6cqw] text-white/45">
-          <span style={{ fontSize: '1.55cqw' }}>Product</span>
-          <span style={{ fontSize: '1.55cqw' }}>Pricing</span>
-          <span style={{ fontSize: '1.55cqw' }}>About</span>
+          <span style={{ fontSize: "1.55cqw" }}>Product</span>
+          <span style={{ fontSize: "1.55cqw" }}>Pricing</span>
+          <span style={{ fontSize: "1.55cqw" }}>About</span>
           <Btn accent>Get started</Btn>
         </div>
       </motion.div>
@@ -181,22 +181,28 @@ function MarketingLayout() {
           </div>
         </div>
 
-        <Block className="relative flex-1 overflow-hidden" style={{ height: '30cqw' }}>
+        <Block
+          className="relative flex-1 overflow-hidden"
+          style={{ height: "30cqw" }}
+        >
           <div
             className="absolute inset-0"
             style={{
               background:
-                'radial-gradient(80% 70% at 30% 20%, rgb(77 141 255 / 0.32), transparent 70%), radial-gradient(70% 60% at 85% 90%, rgb(139 92 246 / 0.3), transparent 70%)',
+                "radial-gradient(80% 70% at 30% 20%, rgb(77 141 255 / 0.32), transparent 70%), radial-gradient(70% 60% at 85% 90%, rgb(139 92 246 / 0.3), transparent 70%)",
             }}
           />
           <div className="absolute inset-x-[9%] bottom-[9%]">
             <div
               className="font-medium text-white/80"
-              style={{ fontSize: '1.75cqw' }}
+              style={{ fontSize: "1.75cqw" }}
             >
               Live overview
             </div>
-            <div className="mt-[0.6cqw] text-white/35" style={{ fontSize: '1.4cqw' }}>
+            <div
+              className="mt-[0.6cqw] text-white/35"
+              style={{ fontSize: "1.4cqw" }}
+            >
               Updated moments ago
             </div>
           </div>
@@ -211,9 +217,9 @@ function MarketingLayout() {
 /** Captions inside a fictional studio site. They describe the demo page, not
  *  this studio — nothing here is a claim about real work. */
 const CAPABILITIES = [
-  { name: 'Identity', note: 'Naming, marks, systems' },
-  { name: 'Websites', note: 'Design and build' },
-  { name: 'Motion', note: 'Film and interaction' },
+  { name: "Identity", note: "Naming, marks, systems" },
+  { name: "Websites", note: "Design and build" },
+  { name: "Motion", note: "Film and interaction" },
 ];
 
 /**
@@ -232,15 +238,15 @@ function StudioLayout() {
           <Mark size={2.4} />
           <span
             className="font-semibold tracking-[-0.02em] text-white/90"
-            style={{ fontSize: '2cqw' }}
+            style={{ fontSize: "2cqw" }}
           >
             Aperture
           </span>
         </div>
         <div className="flex items-center gap-[2.4cqw] text-white/45">
-          <span style={{ fontSize: '1.5cqw' }}>Work</span>
-          <span style={{ fontSize: '1.5cqw' }}>Studio</span>
-          <span style={{ fontSize: '1.5cqw' }}>Journal</span>
+          <span style={{ fontSize: "1.5cqw" }}>Work</span>
+          <span style={{ fontSize: "1.5cqw" }}>Studio</span>
+          <span style={{ fontSize: "1.5cqw" }}>Journal</span>
           <Btn>Let’s talk</Btn>
         </div>
       </motion.div>
@@ -258,45 +264,54 @@ function StudioLayout() {
 
       {/* Image band — three plates reading as photography, not placeholders. */}
       <div className="mt-[3.4cqw] grid grid-cols-[1.6fr_1fr_1fr] gap-[1.6cqw]">
-        <Block className="relative overflow-hidden" style={{ height: '17cqw' }}>
+        <Block className="relative overflow-hidden" style={{ height: "17cqw" }}>
           <div
             className="absolute inset-0"
             style={{
               background:
-                'radial-gradient(75% 80% at 25% 15%, rgb(77 141 255 / 0.34), transparent 72%), radial-gradient(60% 70% at 90% 95%, rgb(139 92 246 / 0.3), transparent 74%)',
+                "radial-gradient(75% 80% at 25% 15%, rgb(77 141 255 / 0.34), transparent 72%), radial-gradient(60% 70% at 90% 95%, rgb(139 92 246 / 0.3), transparent 74%)",
             }}
           />
           <div className="absolute inset-x-0 bottom-0 h-[52%] bg-[linear-gradient(to_top,rgb(5_8_16/0.88),transparent)]" />
           <div className="absolute inset-x-[6%] bottom-[8%]">
-            <div className="font-medium text-white/85" style={{ fontSize: '1.6cqw' }}>
+            <div
+              className="font-medium text-white/85"
+              style={{ fontSize: "1.6cqw" }}
+            >
               Halden Optics
             </div>
-            <div className="text-white/35" style={{ fontSize: '1.3cqw' }}>
+            <div className="text-white/35" style={{ fontSize: "1.3cqw" }}>
               Brand & site
             </div>
           </div>
         </Block>
-        <Block className="relative overflow-hidden" style={{ height: '17cqw' }}>
+        <Block className="relative overflow-hidden" style={{ height: "17cqw" }}>
           <div
             className="absolute inset-0"
             style={{
               background:
-                'radial-gradient(80% 70% at 60% 25%, rgb(34 211 238 / 0.24), transparent 74%)',
+                "radial-gradient(80% 70% at 60% 25%, rgb(34 211 238 / 0.24), transparent 74%)",
             }}
           />
-          <div className="absolute inset-x-[9%] bottom-[9%] text-white/70" style={{ fontSize: '1.35cqw' }}>
+          <div
+            className="absolute inset-x-[9%] bottom-[9%] text-white/70"
+            style={{ fontSize: "1.35cqw" }}
+          >
             Marlow
           </div>
         </Block>
-        <Block className="relative overflow-hidden" style={{ height: '17cqw' }}>
+        <Block className="relative overflow-hidden" style={{ height: "17cqw" }}>
           <div
             className="absolute inset-0"
             style={{
               background:
-                'radial-gradient(80% 70% at 40% 30%, rgb(240 179 87 / 0.22), transparent 74%)',
+                "radial-gradient(80% 70% at 40% 30%, rgb(240 179 87 / 0.22), transparent 74%)",
             }}
           />
-          <div className="absolute inset-x-[9%] bottom-[9%] text-white/70" style={{ fontSize: '1.35cqw' }}>
+          <div
+            className="absolute inset-x-[9%] bottom-[9%] text-white/70"
+            style={{ fontSize: "1.35cqw" }}
+          >
             Ferrous
           </div>
         </Block>
@@ -308,11 +323,14 @@ function StudioLayout() {
           <motion.div key={item.name} variants={rise} className="flex flex-col">
             <span
               className="font-medium tracking-[-0.02em] text-white/85"
-              style={{ fontSize: '1.7cqw' }}
+              style={{ fontSize: "1.7cqw" }}
             >
               {item.name}
             </span>
-            <span className="mt-[0.5cqw] text-white/35" style={{ fontSize: '1.3cqw' }}>
+            <span
+              className="mt-[0.5cqw] text-white/35"
+              style={{ fontSize: "1.3cqw" }}
+            >
               {item.note}
             </span>
           </motion.div>
@@ -336,14 +354,14 @@ function PortfolioLayout() {
       <motion.div variants={rise} className="flex items-center justify-between">
         <span
           className="font-semibold tracking-[-0.02em] text-white/90"
-          style={{ fontSize: '2cqw' }}
+          style={{ fontSize: "2cqw" }}
         >
           Tejas Naik
         </span>
         <div className="flex gap-[2.6cqw] text-white/40">
-          <span style={{ fontSize: '1.5cqw' }}>Work</span>
-          <span style={{ fontSize: '1.5cqw' }}>Process</span>
-          <span style={{ fontSize: '1.5cqw' }}>Contact</span>
+          <span style={{ fontSize: "1.5cqw" }}>Work</span>
+          <span style={{ fontSize: "1.5cqw" }}>Process</span>
+          <span style={{ fontSize: "1.5cqw" }}>Contact</span>
         </div>
       </motion.div>
 
@@ -359,18 +377,25 @@ function PortfolioLayout() {
 
       <div className="mt-auto grid grid-cols-3 gap-[2cqw]">
         {projects.map((project) => (
-          <motion.div key={project.slug} variants={rise} className="flex min-w-0 flex-col">
+          <motion.div
+            key={project.slug}
+            variants={rise}
+            className="flex min-w-0 flex-col"
+          >
             {/* Same 16:10 as the Work cards, so the preview is never cropped. */}
-            <div className="aspect-[16/10] overflow-hidden rounded-[1.2cqw] border border-white/[0.07]">
+            <div className="aspect-16/10 overflow-hidden rounded-[1.2cqw] border border-white/[0.07]">
               <ProjectVisual kind={project.slug} />
             </div>
             <div
               className="mt-[1.1cqw] truncate font-medium text-white/85"
-              style={{ fontSize: '1.5cqw' }}
+              style={{ fontSize: "1.5cqw" }}
             >
               {project.title}
             </div>
-            <div className="truncate text-white/40" style={{ fontSize: '1.3cqw' }}>
+            <div
+              className="truncate text-white/40"
+              style={{ fontSize: "1.3cqw" }}
+            >
               {project.category}
             </div>
           </motion.div>
@@ -386,9 +411,9 @@ function PortfolioLayout() {
  *  argument that this studio builds range, so each entry has to read
  *  unmistakably as a *site*. */
 export const buildLayouts = [
-  { id: 'marketing', label: 'marketing-site', Component: MarketingLayout },
-  { id: 'studio', label: 'studio-site', Component: StudioLayout },
-  { id: 'portfolio', label: 'portfolio', Component: PortfolioLayout },
+  { id: "marketing", label: "marketing-site", Component: MarketingLayout },
+  { id: "studio", label: "studio-site", Component: StudioLayout },
+  { id: "portfolio", label: "portfolio", Component: PortfolioLayout },
 ] as const;
 
 /**
@@ -431,15 +456,15 @@ export function SelfBuildingSite({
       // reader announces "Lumen Product Pricing Get started Grow without the
       // guesswork…" as if it were part of the page.
       aria-hidden="true"
-      className={cn('relative size-full overflow-hidden', className)}
-      style={{ containerType: 'inline-size' }}
+      className={cn("relative size-full overflow-hidden", className)}
+      style={{ containerType: "inline-size" }}
     >
       <AnimatePresence mode="wait">
         <motion.div
           key={active.id}
           variants={stage}
           // Reduced motion skips the assembly and shows the finished layout.
-          initial={reduced ? 'visible' : 'hidden'}
+          initial={reduced ? "visible" : "hidden"}
           animate="visible"
           exit="exit"
           className="absolute inset-0 p-[3.6cqw]"
