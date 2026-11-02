@@ -11,3 +11,15 @@ export const PROJECT_TYPES = [
 ] as const;
 
 export type ProjectType = (typeof PROJECT_TYPES)[number];
+
+/** Contact form "Budget" options. Here rather than in ContactForm so the studio
+ *  assistant can validate a handoff against the exact same list. */
+export const BUDGETS = [
+  'Under $2,500',
+  '$2,500 – $5,000',
+  '$5,000 – $10,000',
+  '$10,000+',
+  'Not sure yet',
+] as const;
+
+export type Budget = (typeof BUDGETS)[number];

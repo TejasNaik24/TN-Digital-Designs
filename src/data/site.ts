@@ -4,6 +4,8 @@
  * This is a studio site — a sales tool for winning web development work. It is
  * deliberately not a CV: no employers, no research, no credentials.
  */
+const REPLY_TIME = 'within a day';
+
 export const site = {
   name: 'Tejas Naik',
   monogram: 'TN',
@@ -11,7 +13,11 @@ export const site = {
 
   /** From VITE_SITE_URL (set in vite.config.ts, with its default). To move to
    *  a custom domain, change that env var — nothing else. No trailing slash. */
-  url: import.meta.env.VITE_SITE_URL,
+  // Guarded because the assistant's serverless function also loads this file,
+  // and import.meta.env doesn't exist there. Keep the full
+  // `import.meta.env.VITE_SITE_URL` expression: Vite's `define` matches it
+  // literally, and `?.` would slip past the replacement.
+  url: typeof import.meta.env === 'object' ? import.meta.env.VITE_SITE_URL : '',
 
   email: 'naik.tejas11@gmail.com',
 
@@ -36,9 +42,13 @@ export const site = {
   statement:
     'Your website is often the first interaction someone has with your company. It should feel like it.',
 
+  /** Shown in the Contact lede ("usually reply …") and quoted by the studio
+   *  assistant as the typical reply time. */
+  replyTime: REPLY_TIME,
+
   contact: {
     heading: ['Tell me what you’re building.', 'I’ll take it from there.'],
-    lede: 'I personally review every project enquiry and usually reply within a day. No sales team, no discovery-call funnel — just a straight answer about whether I’m the right fit.',
+    lede: `I personally review every project enquiry and usually reply ${REPLY_TIME}. No sales team, no discovery-call funnel — just a straight answer about whether I’m the right fit.`,
   },
 } as const;
 

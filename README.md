@@ -8,16 +8,16 @@ Live positioning: *"I build websites that make people trust you before you say a
 
 ## What this is — read before writing any copy
 
-This is a **client-acquisition site for a one-person web development studio**. Its only job is to make a business owner want to hire Tejas to build their website.
+This is a **client-acquisition site for a one-person web development studio**. Its only job is to make a small-business owner want to hire Tejas to build their website.
 
 Constraints that follow from this:
 
 | Rule | Why |
 |---|---|
-| **Work is concept builds only.** Every project is self-directed and chipped `CONCEPT` everywhere it appears. | Presenting fictional work as client work is the one design decision that would genuinely damage credibility. |
-| **Never fabricate** clients, testimonials, metrics, revenue, conversion lifts, or awards. | Same. Honesty is part of the design quality. |
+| **Work is concept builds only.** The three projects are fictional local businesses with real, working sites. Each is labelled `Concept` on its card, and every demo carries a concept banner. | Presenting fictional work as client work is the one design decision that would genuinely damage credibility. |
+| **Never fabricate** clients, testimonials, reviews, ratings, metrics, revenue, conversion lifts or awards. This applies to the demos and to both AI assistants too. | Same. Honesty is part of the design quality. |
 | **AI is one capability of four**, never the site's identity. | This is a web studio that can integrate AI, not an AI company. |
-| **Next.js is excluded** from the build *and* the visible tech list (capped at eight entries in `src/data/tech.ts`). | The site doesn't use it. Listing it would be a lie in the shop window. |
+| **Next.js is excluded** from the build *and* from the visible tech list (capped at eight entries in `src/data/tech.ts`). | The site doesn't use it. Listing it would be a lie in the shop window. |
 | **No brand logos anywhere.** | Avoids trademark misuse and reads more premium than a logo wall. The only exception is `src/components/ui/SocialIcons.tsx` — lucide v1 dropped brand icons, so the GitHub/LinkedIn glyphs are hand-drawn. |
 
 ---
@@ -26,17 +26,18 @@ Constraints that follow from this:
 
 ```bash
 npm install
-npm run dev          # Vite dev server on :5173
+cp .env.example .env   # optional: EmailJS + Gemini keys (see below)
+npm run dev            # Vite dev server on :5173, also serves /api
 ```
 
 | Script | What it does |
 |---|---|
-| `npm run dev` | Dev server on `:5173` |
+| `npm run dev` | Dev server on `:5173`. A dev-only plugin in `vite.config.ts` serves `api/*.ts`, so the assistants work without the Vercel CLI |
 | `npm run build` | `tsc --noEmit` **then** `vite build` |
 | `npm run typecheck` | Types only, no emit |
-| `npm run preview` | Serve `dist/` locally |
+| `npm run preview` | Serve `dist/` locally. It mirrors `vercel.json`'s per-route rewrites, so it serves what production serves |
 
-> **There is no test suite and no linter.** `npm run build` type-checks first, so **it is the real gate** — run it before claiming anything works.
+> **There is no test suite and no linter.** `npm run build` type-checks first, so **it is the real gate**. Run it before claiming anything works.
 
 ---
 
@@ -44,17 +45,17 @@ npm run dev          # Vite dev server on :5173
 
 | | |
 |---|---|
-| **Framework** | React 19.2 + TypeScript 7 (strict, incl. `noUncheckedIndexedAccess`) |
+| **Framework** | React 19.2 + TypeScript 7 (strict, including `noUncheckedIndexedAccess`) |
 | **Build** | Vite 8, target `es2022`, `lightningcss` for CSS minification |
-| **Styling** | Tailwind v4 — **no config file**, everything lives in `@theme` inside `src/styles/index.css` |
+| **Styling** | Tailwind v4. There's **no config file**; everything lives in `@theme` inside `src/styles/index.css` |
 | **Motion** | Motion 13 (`motion/react`) |
 | **Routing** | react-router-dom 7 |
 | **Icons** | lucide-react |
-| **Fonts** | Geist + Geist Mono (self-hosted via `@fontsource-variable`) |
+| **Fonts** | Geist + Geist Mono for the studio; Bricolage Grotesque, Figtree and Big Shoulders Display for the demos. All self-hosted via `@fontsource-variable` |
+| **Server** | One Vercel Function, `api/chat.ts` (Gemini, called with plain `fetch`, no SDK) |
+| **Email** | EmailJS REST from the browser |
 
-`@` is aliased to `./src`.
-
-Roughly **7,900 lines** across 67 source files. No CMS, no state library, no UI kit, no backend.
+`@` is aliased to `./src`. There's no CMS, no state library and no UI kit.
 
 ---
 
@@ -62,101 +63,173 @@ Roughly **7,900 lines** across 67 source files. No CMS, no state library, no UI 
 
 ### Routes
 
-`BrowserRouter` lives in `main.tsx`; the route table is in `App.tsx`. `AmbientBackground`, `Navbar` and `Footer` sit **outside** `<Routes>` so they persist across navigation.
+`BrowserRouter` lives in `main.tsx`; the top-level table is in `App.tsx`.
 
-| Route | Page | Notes |
+| Route | Renders | Notes |
 |---|---|---|
-| `/` | `pages/HomePage.tsx` | Eight sections, in order |
-| `/work` | `pages/WorkPage.tsx` | Standalone gallery index |
-| `/work/:slug` | `pages/ProjectPage.tsx` | Case study. Unknown slug renders the 404, not a crash |
-| `*` | `pages/NotFoundPage.tsx` | In-identity 404 |
+| `/`, `/work`, anything else | `pages/StudioSite.tsx` (lazy chunk) | The studio's own routes inside `StudioChrome` (background, navbar, footer, studio assistant). Unknown paths get the in-identity 404 |
+| `/work/:slug` | `pages/DemoPage.tsx` | A concept business's own website, with **no** studio chrome, only the `ConceptBanner`. Unknown slugs render the studio 404 |
 
-`vercel.json` provides the SPA rewrite. **Without it every deep link 404s on refresh.**
+**The code is split by route.** The studio is one lazy chunk, and each demo site is its own chunk. A visitor opening a demo link never downloads the studio. The `seo()` plugin in `vite.config.ts` adds `modulepreload` links to each route's HTML for exactly the chunks it needs, so the split costs no extra round trip.
+
+`App.tsx` owns scroll and focus for every route:
+- `useRouteScroll` restores the position per history entry. It records only while that entry is the active one; otherwise the next route's jump-to-top overwrote it and Back always landed at the top.
+- `useRouteFocus` moves focus to `<main>`.
 
 ### Homepage section order
 
-`Hero → Statement → Services → Work → WhyMe → Process → FAQ → Contact`
+`Hero → Statement → Services → Work → WhyMe → Process → Pricing → FAQ → Contact`
 
-`navLinks` in `src/data/site.ts` **must match this order** — nav links jump in document order, so a mismatch makes clicking through the nav scroll backwards.
+`navLinks` in `src/data/site.ts` **must match this order**. Nav links jump in document order, so a mismatch makes clicking through the nav scroll backwards.
 
 ### Content lives in `src/data`
 
-Every piece of user-facing copy is in `src/data/*.ts` — site identity, services, projects, reasons, process, FAQ, tech. **Components contain no prose.** Change copy there, not in JSX.
+Every piece of user-facing studio copy is in `src/data/*.ts`: site identity, services, projects, reasons, process, pricing, FAQ, tech, project types and budgets. **Components contain no prose.** Change copy there, not in JSX.
 
-> `src/data/faq.ts` answers are commitments to prospective clients (timelines, support). Treat them as content to confirm with Tejas, not as fixed truth.
+**These files are also read by the studio assistant's serverless function**, so keep them server-safe:
+- text only, no React or icon imports (icons map by `id` inside `Services.tsx` and `WhyMe.tsx`);
+- `.js` extensions on relative imports;
+- no bare `import.meta.env` (see the guard in `site.ts`).
+
+> `faq.ts` answers and the tier contents in `pricing.ts` are commitments to prospective clients. Confirm them; don't treat them as fixed truth.
 
 ---
 
-## The Work system
+## Concept demos
 
-Three self-directed concepts, each with a real route and a real case study:
+Three fictional local businesses, each a complete clickable site at its own route with its own brand:
 
-| Slug | Concept | Category | Visual language |
+| Slug | Business | Type | Signature feature |
 |---|---|---|---|
-| `atelier-nord` | Atelier Nord | Architecture & Design Studio | **Light** — warm off-white paper, charcoal type, Swiss-modern discipline |
-| `vela` | Vela | AI Product / SaaS | Near-black, single azure accent, real product surface |
-| `monument` | Monument | Luxury Hospitality | Warm dark, editorial type, persistent booking bar |
+| `restaurant` | Ferro | Bricolage Grotesque, sage + chili red | Menu tabs, live "open now" hours, table requests |
+| `clinic` | Northgate Dental | Figtree, white + deep teal | Four-step booking request, and its own AI assistant |
+| `gym` | Groundwork | Big Shoulders Display + Figtree, concrete + orange | Filterable weekly schedule, monthly/annual pricing, free-trial form |
 
-Atelier Nord is deliberately **light**. Every other surface on the site is near-black, and a studio that can only make dark tech websites is a studio with one trick.
+**Rules:**
+- Every demo route renders `ConceptBanner`. Every form ends in `ConceptConfirmation`, which says plainly that nothing was sent or booked.
+- No reviews, star ratings, "trusted by" logos or invented stats, even for a fictional business.
+- Brand tokens live once, in `src/demos/brands.ts`. The demo site, its Work-card preview (`ProjectVisual`) and the hero mockup all read them.
 
-### Case studies are data, not markup
+**Adding a demo:**
+1. Add an entry to `projects.ts` and `brands.ts`.
+2. Add `src/demos/<slug>/Site.tsx`.
+3. Register it in `DemoPage`'s `sites` map.
+4. Add a preview in `ProjectVisual`.
+5. **Add the slug to the `/work/:slug(...)` rewrite in `vercel.json`.**
 
-`src/data/projects.ts` holds a `CaseStudySection` discriminated union; `ProjectSection.tsx` switches on `kind`. **A new project is a data edit** — you only touch components to add a new *section type*.
+**Adding a real client project:** set `type: 'client'` on the entry. The card handles the badge.
+
+---
+
+## AI assistants
+
+Two assistants share one core:
+
+| | Where | Knows | Can hand off to the contact form |
+|---|---|---|---|
+| **Studio** | `/` and `/work` (`components/assistant/StudioAssistant.tsx`) | Everything in `src/data` | Yes |
+| **Clinic** | `/work/clinic` (`demos/clinic/ClinicAssistant.tsx`) | `demos/clinic/data.ts` | No |
+
+### How it fits together
+
+- **`src/lib/assistant/core.ts`** holds what both share: types, limits, keyword scoring, and `parseHandoff`. It's loaded by the browser *and* the server, so: no React, no `@/`, and `.js` extensions on imports.
+- **`src/lib/assistant/studio.ts`** is the studio config. **The system prompt template lives here** (`systemPrompt()`), along with the scripted fallback.
+- **`src/demos/clinic/assistant.ts`** is the clinic config.
+- **`src/lib/assistant/useAssistantChat.ts`** holds the shared React hooks for transcript and sending (`useAssistantChat`) and the focus trap, Escape and return-focus behaviour (`useAssistantPanel`).
+- **`api/chat.ts`** is the only endpoint. The body is `{ assistant: 'clinic' | 'studio', messages }`. The server picks the system prompt from a fixed registry; **a prompt is never accepted from the browser**. `assistant` defaults to `clinic` for older clients.
+
+### Knowledge is assembled, never copied
+
+The studio prompt is built at request time from `site`, `services`, `processSteps`, `tiers`, `projects`, `faqs`, `reasons`, `technologies`, `PROJECT_TYPES` and `BUDGETS`. Edit `pricing.ts` and the assistant reflects it with no other change.
+
+- **The pricing rule switches automatically.** While any tier's `startingAt` still contains the `X,XXX` placeholder, the assistant may not state any dollar amount. Once all three are real, it quotes them, always as "starting at".
+- **Keep the prompt under ~2,500 tokens** (it's about 2,400 now). If it grows past that, trim descriptions, never rules. The "why work with me" points are already titles-only for this reason.
+
+### Never-invent rules
+
+The prompt forbids the assistant from inventing:
+- prices, discounts, timelines, guarantees or availability;
+- firm per-project quotes;
+- past clients or testimonials;
+- personal details about Tejas beyond name, email, GitHub and LinkedIn.
+
+It also forbids giving legal, tax or financial advice, going off-topic, and obeying "ignore your instructions". Change the wording only with the same care as a FAQ promise.
+
+### Handoff to the contact form
+
+When the visitor agrees, the model ends its reply with:
 
 ```
-prose    — heading + paragraphs
-screen   — one screen, full / split-left / split-right
-screens  — 2-up supporting screens
-palette  — colour swatches with notes
-build    — technical breakdown
+HANDOFF {"projectType": "...", "budget": "...", "details": "..."}
 ```
 
-### Concept screens
+The server strips that line and validates it: `projectType` must be a real form option, `budget` a real option or empty, and `details` is capped at 600 characters. It returns `handoff` alongside the text; invalid JSON is dropped silently.
 
-15 screens in `src/components/projects/screens/`, one registry per concept, resolved through `registry.ts`.
+The widget then shows a **project brief** card. **"Fill in the contact form"** calls `prefillContact()` from `lib/quote.ts`, which:
+- sets the type, budget and message;
+- focuses Name and announces the fill to screen readers;
+- works from `/work` too, because a form that mounts later picks up the pending request.
 
-All drawn in **DOM/CSS/SVG — zero raster bytes**, crisp at any density, editable rather than frozen in a PNG.
+**It never submits.** The honeypot and timing check still apply.
 
-**The one rule that makes this work:** every screen sits in a `container-type: inline-size` context and **sizes everything in `cqw`**. One component then renders correctly as a small split-column figure *and* as a full-bleed hero with no breakpoints. A fixed `px` value anywhere will break at one of those scales.
+### Fallbacks and limits
 
-Screens must use **real text, never grey placeholder bars** — bars read as a *skeleton loader*, i.e. an unfinished mockup, which is the exact opposite of what this section is selling. This rule has been violated twice and had to be audited out both times.
+Every request gets an answer. The assistant falls back to scripted keyword answers, built from the same data, when:
+- there's no key;
+- Gemini returns a quota or rate-limit error;
+- the request times out;
+- the reply is empty or truncated;
+- the visitor goes over the per-IP limit (8 a minute, 40 a day);
+- the browser can't reach `/api/chat` at all.
 
-### Adding a real client project
+Other limits:
+- Output is capped at 1,024 tokens with minimal thinking.
+- Messages are capped at 500 characters, and the server keeps the last 6 turns.
+- The per-IP limit is **best-effort**. It's an in-memory map, so it's per function instance.
 
-Set `type: 'client'` on the entry. The card, gallery, badge, and case-study page all handle it already. Nothing else changes.
+> **Both assistants share one Gemini quota** (it's per Google project), and the per-IP limit counts across both.
+
+### Environment
+
+```
+GEMINI_API_KEY   server-only (no VITE_ prefix, never bundled)
+GEMINI_MODEL     optional, defaults to gemini-3.5-flash-lite
+```
+
+Set both in Vercel → Settings → Environment Variables (Production + Preview), then redeploy. Locally, put them in `.env`.
 
 ---
 
 ## Design system
 
-All colour, type, and motion tokens are `@theme` entries in `src/styles/index.css` (42 tokens). **Nothing arbitrary belongs in a component.**
+All colour, type and motion tokens are `@theme` entries in `src/styles/index.css`. **Nothing arbitrary belongs in a component.**
 
 ### The contrast trap
 
-`--color-ink-4` measures **2.7:1** against the page background. It is **decoration only** — the `aria-hidden` blueprint dimension marks and the pull-quote glyph.
-
-Body text must use `ink-2` (7.9:1) or `ink-3` (4.8:1). This has leaked into the footer and service cards before and had to be audited out. **Check any new text against it.**
+| Token | Ratio | Use |
+|---|---|---|
+| `ink-2` | 7.9:1 | Body text |
+| `ink-3` | 5.4:1 on the page, **4.6:1 on the lightest card surface** | Secondary text. At its old value it fell to 4.1:1 on cards |
+| `ink-4` | 2.7:1 | **Decoration only** — `aria-hidden` dimension marks and the pull-quote glyph. Never for text |
 
 ### Shared surfaces
 
 | Utility | Use |
 |---|---|
-| `card-surface` | The one card background. Consolidated from four different backgrounds that were close enough to look accidental |
+| `card-surface` | The one card background. **Translucent**, so don't use it for anything floating over content (the assistant panel uses solid `bg-elevated`) |
 | `surface-card` | Cursor-tracked gradient border + interior wash (drives `--spot-x`/`--spot-y`) |
-| `btn-glow` | Same mechanism retuned for button scale. Rests at `0.34` opacity, not 0 — with the glow fully off, the primary CTA was indistinguishable from the secondary button beside it |
+| `btn-glow` | The same mechanism at button scale. Reserved for the single primary CTA, "Start a project" |
 | `shell` | Max-width + gutter container |
 
 ### Section rhythm
 
-`Section` takes `tone` (`base` / `raised` / `deep`) and `space` (`tight` / `regular` / `loose`), plus an `ambient` flag for a soft pool of light.
+`Section` takes `tone` (`base` / `raised` / `deep`) and `space` (`tight` / `regular` / `loose`), plus an `ambient` flag. `raised` and `deep` fade to nothing at both edges on purpose: you should feel the rhythm without being able to point at where it starts.
 
-Before this existed, every section was transparent over one canvas colour at identical padding — eight thousand pixels of scroll with no landmarks, reading as an endless void. `raised` and `deep` fade to nothing at both edges on purpose: you should feel the rhythm without being able to point at where it starts.
-
-The anchor `id` sits on an **inner div** with `scroll-mt-24`, not the outer `<section>` — anchoring the padded box scrolled to the top of the padding and left a wall of empty space above the heading.
+The anchor `id` sits on an **inner div** with `scroll-mt-24`, not the outer `<section>`. Anchoring the padded box left a wall of empty space above the heading.
 
 ### Motion
 
-One easing curve for the entire site: expo-out `[0.16, 1, 0.3, 1]`, exported as `EASE_EXPO`. Hover transitions are **220ms** and live in Tailwind classes.
+One easing curve for the entire site: expo-out `[0.16, 1, 0.3, 1]`, exported as `EASE_EXPO`. Hover transitions are **220ms**.
 
 ---
 
@@ -166,59 +239,59 @@ Every rule below is a fixed bug, not a preference. The site felt smooth in Chrom
 
 ### No `backdrop-filter` on anything persistent
 
-It survives only on **transient overlays** (the mobile menu). It is deliberately absent from the fixed header, the device frame, cards, buttons, and the contact form.
+It survives only on **transient overlays** (the mobile menu). It's deliberately absent from the fixed header, the device frame, cards, buttons, the contact form and the assistant widget.
 
-The diagnosis came from a clean A/B: the "Start a project" button inside the Work section scrolled *instantly* in Safari while a nav link calling the identical `scrollToId` stalled for a beat. The only difference was that the nav link lived inside a `fixed` header carrying `backdrop-blur-xl`. WebKit re-samples and re-blurs everything behind a backdrop-filtered element on every scroll frame *and* on any repaint inside it — a nav link's hover colour transition is enough.
+The diagnosis came from a clean A/B test. The "Start a project" button inside the Work section scrolled *instantly* in Safari, while a nav link calling the identical `scrollToId` stalled for a beat. The only difference was that the nav link lived inside a `fixed` header carrying `backdrop-blur-xl`. WebKit re-samples and re-blurs everything behind a backdrop-filtered element on every scroll frame, *and* on any repaint inside it.
 
 ### No `mix-blend-mode` anywhere
 
-WebKit falls back to CPU-assisted compositing for a blended layer and drags anything stacked with it along. Because the affected layers were full-viewport and always mounted, this tax applied on every frame, everywhere, permanently.
+WebKit falls back to CPU-assisted compositing for a blended layer, and drags anything stacked with it along.
 
 ### Cursor-tracking moves by `transform` only
 
-`usePointerGlow` translates a fixed-size element with a *static* gradient. It used to write `--mx`/`--my` onto `:root` feeding a `radial-gradient(at var(--mx) var(--my))`. Animating a gradient's own centre forces a repaint of its pixels every frame and can't be composited — that was the actual cause of a "the mouse itself feels laggy in Safari" report.
+`usePointerGlow` translates a fixed-size element with a *static* gradient. Animating a gradient's own centre forces a repaint every frame and can't be composited.
 
 ### Scrolling is a custom Motion `animate()` loop
 
-`lib/scroll.ts` drives `window.scrollTo()` from a Motion tween on an expo-out curve. **Two alternatives were tried and reverted:**
-
-1. **Lenis** — owns the scroll position, so every programmatic jump fought its rAF loop and queued trackpad momentum.
-2. **Native `scrollIntoView({ behavior: 'smooth' })`** — Safari's built-in easing has a heavy ease-in ramp, spending its first ~100–200ms barely moving. Reads as "click, pause, then it scrolls," and browsers don't expose the curve to tune it.
-
-The header offset is read from `getComputedStyle(target).scrollMarginTop` at call time — one source of truth.
+`lib/scroll.ts` drives `window.scrollTo()` from a Motion tween. Two alternatives were tried and reverted:
+- **Lenis**, which fought every programmatic jump.
+- **Native smooth `scrollIntoView`**, because Safari's ramp reads as "click, pause, then scroll".
 
 ### Route changes must land instantly, and in a layout effect
 
-Two load-bearing details in `App.tsx` and `HomePage.tsx`:
-
-- **`useRouteScroll` must stay a `useLayoutEffect`.** React runs a parent's layout effect *after* children's layout effects but *before* their passive effects — which is when `useRevealOnce` builds its IntersectionObservers. Land the scroll in a passive effect instead and those observers are built at the *old* position, deliver "not intersecting", then the page jumps past them. No further threshold is ever crossed and whole sections stay at `opacity: 0` permanently.
-- **Cross-route anchor jumps are instant, never animated.** A tween across ~8000px moves the viewport faster than any human scroll, so a section can go from fully-below to fully-above between two frames without crossing a threshold — the same silent failure.
+- **`useRouteScroll` must stay a `useLayoutEffect`.** It has to land before `useRevealOnce` builds its IntersectionObservers. Otherwise whole sections stay at `opacity: 0`.
+- **Cross-route anchor jumps are instant, never animated**, for the same reason.
 
 ### `html` uses `overflow-x: clip` and must stay `clip`
 
-Decorative elements deliberately sit outside their parents. `overflow-x: hidden` on `<body>` doesn't work — it propagates to the viewport and leaves body itself `visible`, so spill still produced real 14px horizontal scroll.
-
-It must be **`clip`, never `hidden`** — `hidden` turns `html` into a scroll container and silently breaks every `position: sticky` on the page, which the FAQ and Contact headings both rely on.
+`hidden` would turn `html` into a scroll container and silently break every `position: sticky`.
 
 ### rAF loops must self-suspend
 
-`usePointerGlow` parks itself once it catches up or the tab is hidden. `SelfBuildingSite`'s cycle stops when the hero scrolls out of view. `ConstellationField` pauses on hidden tabs and caps DPR at 1.5. **Nothing should run permanently.**
+`usePointerGlow`, `SelfBuildingSite` and `ConstellationField` all pause when off-screen or on a hidden tab. **Nothing should run permanently.**
 
 ---
 
 ## Accessibility
 
-- **Reduced motion is a first-class path.** Twelve files gate on `useReducedMotionSafe`. The site must still look *designed*, not merely functional — verify visually, not just by reading the flag.
-- **Scroll reveals never use Motion's `whileInView`.** `useRevealOnce` also treats `boundingClientRect.top < 0` as revealed, because a plain `isIntersecting` check loses elements when you scroll fast or land on a deep link. Go through `<Reveal>` or `useRevealOnce`.
-- Route changes move focus to `<main>` (`tabIndex={-1}`, `preventScroll: true`) so the change isn't silent for screen readers.
-- The skip link **is not** a bare `href="#main"` — a same-document hash click updates `window.location` without firing `popstate`, leaving the router's location stale.
-- Tap targets are ≥44px. Focus rings are `:focus-visible` only and are never removed.
+- **Reduced motion is a first-class path.** It's gated through `useReducedMotionSafe`, and the site must still look *designed* with motion off.
+- **Scroll reveals never use Motion's `whileInView`**; go through `<Reveal>` / `useRevealOnce`.
+- **Route changes move focus to `<main>`.** The skip link moves focus itself rather than using a bare `href="#main"`.
+- **Tap targets are ≥44px.** Focus rings are `:focus-visible`, never removed. Each demo sets `--focus-ring` to its own ink colour.
+- **Field focus borders are full-strength azure.** At 60% opacity they measured 2.85:1, under the 3:1 minimum.
+- **Assistants:**
+  - labelled dialogs with a focus trap;
+  - Escape closes them, and focus returns to the launcher;
+  - `role="log"` transcripts;
+  - a visible "AI assistant" disclosure.
+
+Last audit: Lighthouse accessibility, best practices and SEO all 100 on every route (mobile), including with the studio assistant open. There's no horizontal scroll at 375px.
 
 ---
 
 ## Contact form
 
-`src/lib/contact.ts` is the **entire** integration. It posts to EmailJS's REST endpoint with plain `fetch` — no SDK.
+`src/lib/contact.ts` is the **entire** integration. It posts to EmailJS's REST endpoint with plain `fetch`.
 
 ```
 VITE_EMAILJS_SERVICE_ID
@@ -226,19 +299,35 @@ VITE_EMAILJS_TEMPLATE_ID
 VITE_EMAILJS_PUBLIC_KEY
 ```
 
-See `.env.example`. EmailJS's "public key" is designed to be exposed client-side, so shipping it in the bundle is expected, not a leak. Set the template's **To Email** in the EmailJS dashboard, not from here, so it can't be redirected by a form submission.
+EmailJS's "public key" is designed to be exposed client-side. Set the template's **To Email** in the EmailJS dashboard, so a form submission can't redirect it.
 
-Three outcomes: `sent`, `failed`, `unconfigured`. **Both `unconfigured` and `failed` fall back to a prefilled `mailto:`** — a genuine send failure must never silently swallow a message either, not just a missing config.
+- **Outcomes:** `sent`, `failed` and `unconfigured`. The last two fall back to a prefilled `mailto:`, so a message is never swallowed.
+- **Spam:**
+  - a hidden `website` honeypot field;
+  - a submit within 2s of the form appearing is treated as a bot.
 
-Validation (`lib/validation.ts`) runs **on blur, not on keystroke**. Company and budget stay optional on purpose — every extra required field costs enquiries.
+  Suspected bots see the normal success screen and nothing is sent.
+- **Pre-fill:** the pricing tiers' "Get a quote" and the studio assistant's handoff both go through `prefillContact()` in `lib/quote.ts`.
+- **Options:** project types and budgets live in `src/data/projectTypes.ts`. The first three project types match the pricing tiers.
+- **Validation** runs on blur. Company and budget stay optional on purpose.
 
 ---
 
-## Deployment
+## SEO and deployment
 
-Target is Vercel. `vercel.json` sets the build command, output directory, the SPA rewrite, and immutable caching for hashed assets.
+**One URL setting.** `VITE_SITE_URL` (default `https://tn-digital-designs.vercel.app`) drives the canonical tag, `og:url`, `og:image`, `robots.txt` and `sitemap.xml`. To move to a custom domain, change that env var and nothing else.
 
-Rewrites run **after** the filesystem check, so `favicon.svg`, `robots.txt`, `sitemap.xml` and `/assets/*` keep serving as real files.
+The `seo()` plugin in `vite.config.ts` does three things at build time:
+- Fills `index.html`'s `%TOKEN%`s from `src/data/pageMeta.ts`.
+- Writes `dist/<route>/index.html` for `/work` and each demo, with that page's own title, description and canonical. Link previewers don't run JS.
+- Generates `robots.txt` and `sitemap.xml` from the same route list.
+
+**Share image and icon.** `public/og.png` (1200×630) and `public/apple-touch-icon.png` are rendered from `scripts/og/`. The instructions for regenerating them are at the top of each source file.
+
+**Vercel:**
+- `vercel.json` rewrites `/work` and `/work/(restaurant|clinic|gym)` to their generated HTML.
+- Everything else, except `/api/*`, goes to the SPA.
+- Set the EmailJS and Gemini env vars there (`VITE_SITE_URL` is optional).
 
 ---
 
@@ -246,34 +335,41 @@ Rewrites run **after** the filesystem check, so `favicon.svg`, `robots.txt`, `si
 
 | Item | Where |
 |---|---|
-| **`tn-digital.com` is a stand-in domain** | `index.html`, `public/robots.txt`, `public/sitemap.xml`, `src/data/site.ts` |
+| **Prices are `X,XXX`** | `src/data/pricing.ts`. The assistant refuses to quote prices until all three are real |
+| **Tier contents are draft promises** | `src/data/pricing.ts` |
+| **FAQ answers are promises** | `src/data/faq.ts`. Confirm the timelines and support commitments |
 | **Social URLs are unverified** | `src/data/site.ts` |
-| **FAQ answers are promises** | `src/data/faq.ts` — confirm timelines and support commitments |
-| **Per-route metadata is client-side only** | `useDocumentMeta` sets tags at runtime. Googlebot renders JS and sees them; non-JS scrapers (Slack, iMessage, LinkedIn) still get the site-level OG tags from `index.html`. If per-route link previews matter, the fix is a small post-build prerender step — the route set is fully static — not a bigger runtime library. |
-| **Bundle exceeds Vite's 500 kB warning** | Acceptable for now (~167 kB gzipped). If it matters, code-split `/work/*` and `*` only — never `/`, whose sections the scroll spy needs present at mount. |
+| **Homepage LCP ~2.7s on throttled mobile** | The hero is drawn by JS. The real fix is pre-rendering the hero's HTML at build time |
 
 ---
 
 ## Repo map
 
 ```
+api/
+  chat.ts                    Both assistants: Gemini, rate limit, fallbacks
+scripts/og/                  Sources for og.png and apple-touch-icon.png
 src/
-  App.tsx                    Route table + scroll/focus management
-  main.tsx                   BrowserRouter, manual scrollRestoration
-  pages/                     HomePage, WorkPage, ProjectPage, NotFoundPage
+  App.tsx                    Top-level routes + scroll/focus management
+  pages/                     StudioSite (lazy studio routes), HomePage, WorkPage,
+                             DemoPage, NotFoundPage
   components/
+    assistant/               StudioAssistant (studio chat widget)
     background/              AmbientBackground, ConstellationField (canvas)
-    hero/                    Hero, DeviceFrame, SelfBuildingSite
-    sections/                The eight homepage sections
-    projects/                Cards, case-study parts, ScreenFrame
-      screens/               15 concept screens + registry
-    work/                    WorkGallery (shared by / and /work)
     contact/                 ContactForm, Field
+    demo/                    ConceptBanner
+    hero/                    Hero, DeviceFrame, SelfBuildingSite
+    layout/                  StudioChrome, Section + Shell, Footer
     navigation/              Navbar, MobileMenu
-    layout/                  Section + Shell, Footer
+    projects/                ProjectCard, ProjectVisual (live previews)
+    sections/                The nine homepage sections
     ui/                      Button, Reveal, SectionHeading, MonoLabel, …
-  data/                      ALL user-facing copy
-  hooks/                     9 hooks (reveal, spotlight, scroll spy, …)
-  lib/                       scroll, navigation, contact, validation, motion, cn
-  styles/index.css           The entire design system
+    work/                    WorkGallery (shared by / and /work)
+  data/                      ALL studio copy (server-safe: text only)
+  demos/                     brands.ts, shared.tsx, restaurant/ clinic/ gym/
+  hooks/                     reveal, spotlight, scroll spy, focus trap, meta, …
+  lib/
+    assistant/               core, studio config + prompt, React hooks
+    contact, quote, scroll, navigation, validation, motion, cn
+  styles/                    index.css (design system), demo-fonts.css
 ```

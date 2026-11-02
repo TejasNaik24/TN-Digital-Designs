@@ -2,12 +2,21 @@ import { Section, Shell } from '@/components/layout/Section';
 import { cn } from '@/lib/cn';
 import { Reveal } from '@/components/ui/Reveal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
+import { Boxes, Layers, Sparkles, Wand2, type LucideIcon } from 'lucide-react';
 import { services, type Service } from '@/data/services';
 import { useSpotlight } from '@/hooks/useSpotlight';
 
+/** Icons stay here, not in the data, so the data stays importable server-side. */
+const icons: Record<string, LucideIcon> = {
+  websites: Layers,
+  applications: Boxes,
+  ai: Sparkles,
+  experiences: Wand2,
+};
+
 function ServiceCard({ service, index }: { service: Service; index: number }) {
   const { ref, onPointerMove } = useSpotlight<HTMLDivElement>();
-  const Icon = service.icon;
+  const Icon = icons[service.id] ?? Layers;
 
   return (
     <Reveal delay={index * 0.06} className="h-full">

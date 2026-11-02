@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { AmbientBackground } from '@/components/background/AmbientBackground';
 import { Navbar } from '@/components/navigation/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { StudioAssistant } from '@/components/assistant/StudioAssistant';
 
 /**
  * The studio's own frame: dark ambient background, navbar, footer.
@@ -28,6 +29,10 @@ export function StudioChrome({ children }: { children?: ReactNode }) {
       </main>
 
       <Footer />
+
+      {/* Here, not in a page, so the conversation survives moving between /
+          and /work. It renders nothing on other studio routes (the 404). */}
+      <StudioAssistant />
     </>
   );
 }

@@ -1,19 +1,14 @@
 /**
- * The clinic assistant's shared brain — imported by BOTH the browser widget
- * and the `api/chat.ts` serverless function.
+ * The clinic assistant's config — imported by BOTH the browser widget and the
+ * `api/chat.ts` serverless function. Shared mechanics live in
+ * src/lib/assistant/core.ts; this file is only what's specific to the clinic.
  *
  * Keep this file free of `@/` aliases and browser/React imports, and keep the
  * `.js` extensions on relative imports: Vercel runs `api/` as native ESM, which
  * needs real file extensions (TypeScript maps `./data.js` to `./data.ts`).
  */
+import { bestMatch, type AssistantConfig } from '../../lib/assistant/core.js';
 import { knowledge, phone } from './data.js';
-
-export type ChatTurn = { role: 'user' | 'assistant'; text: string };
-export type ChatReply = { text: string; source: 'ai' | 'scripted' };
-
-/** Limits shared by client (to stop typing) and server (to enforce). */
-export const MAX_MESSAGE_CHARS = 500;
-export const MAX_HISTORY_TURNS = 6;
 
 const FALLBACK = `I can help with our hours, insurance, services, children’s visits, and booking. For anything else — or anything about your own treatment — please call us on ${phone}.`;
 
@@ -32,12 +27,7 @@ export function scriptedAnswer(question: string): string {
     return `I can’t give medical advice, but our team can — please call ${phone}. If you’re in pain or have swelling, we keep same-day emergency slots every weekday.`;
   }
 
-  let best: { score: number; answer: string } = { score: 0, answer: FALLBACK };
-  for (const entry of knowledge) {
-    const score = entry.keywords.reduce((n, keyword) => n + (q.includes(keyword) ? 1 : 0), 0);
-    if (score > best.score) best = { score, answer: entry.answer };
-  }
-  return best.answer;
+  return bestMatch(q, knowledge)?.answer ?? FALLBACK;
 }
 
 /**
@@ -58,3 +48,9 @@ export function systemPrompt(): string {
     facts,
   ].join('\n');
 }
+
+export const clinicAssistant: AssistantConfig = {
+  id: 'clinic',
+  systemPrompt,
+  scriptedReply: (question) => ({ text: scriptedAnswer(question) }),
+};

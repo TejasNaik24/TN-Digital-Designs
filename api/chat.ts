@@ -1,24 +1,42 @@
 /**
- * POST /api/chat — the Northgate Dental demo assistant.
+ * POST /api/chat — every site assistant: the Northgate Dental demo and the
+ * studio's own assistant on / and /work.
  *
  * A Vercel Function (Web-standard handler) living beside the Vite app. The
  * Gemini key stays here, server-side; it is never in the browser bundle.
  *
- * Always answers. Falls back to a scripted reply from the same knowledge base
- * when: no GEMINI_API_KEY, the visitor is over the rate limit, Gemini returns
- * 429/403 (free-tier quota), it times out, the reply is empty or cut off, or
- * anything else goes wrong. `source` tells the client which path answered.
+ * Body: { assistant?: 'clinic' | 'studio', messages: [{ role, text }] }.
+ * The browser names WHICH assistant; the system prompt comes from the fixed
+ * registry below and is never accepted from the request. `assistant` defaults
+ * to 'clinic' so a widget from an older deploy keeps working.
+ *
+ * Always answers. Falls back to that assistant's scripted reply when: no
+ * GEMINI_API_KEY, the visitor is over the rate limit, Gemini returns 429/403
+ * (free-tier quota), it times out, the reply is empty or cut off, or anything
+ * else goes wrong. `source` tells the client which path answered.
+ *
+ * One endpoint rather than one per assistant: the Gemini call, limits and
+ * fallbacks exist once, and the per-IP limit covers both assistants — which
+ * share one Gemini quota anyway.
  *
  * Relative imports keep their `.js` extension: Vercel runs this as native ESM.
  */
 import {
   MAX_HISTORY_TURNS,
   MAX_MESSAGE_CHARS,
-  scriptedAnswer,
-  systemPrompt,
+  parseHandoff,
+  type AssistantConfig,
+  type AssistantId,
   type ChatReply,
   type ChatTurn,
-} from '../src/demos/clinic/assistant.js';
+} from '../src/lib/assistant/core.js';
+import { clinicAssistant } from '../src/demos/clinic/assistant.js';
+import { studioAssistant } from '../src/lib/assistant/studio.js';
+
+const assistants: Record<AssistantId, AssistantConfig> = {
+  clinic: clinicAssistant,
+  studio: studioAssistant,
+};
 
 /** Recommended by Google for new projects (Nov 2026); override with GEMINI_MODEL. */
 const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
@@ -69,14 +87,19 @@ type GeminiResponse = {
   candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[];
 };
 
-async function callGemini(apiKey: string, history: ChatTurn[], withThinkingConfig: boolean): Promise<Response> {
+async function callGemini(
+  apiKey: string,
+  prompt: string,
+  history: ChatTurn[],
+  withThinkingConfig: boolean,
+): Promise<Response> {
   const model = process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
   return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     signal: AbortSignal.timeout(TIMEOUT_MS),
     body: JSON.stringify({
-      system_instruction: { parts: [{ text: systemPrompt() }] },
+      system_instruction: { parts: [{ text: prompt }] },
       contents: history.map((turn) => ({
         role: turn.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: turn.text }],
@@ -92,9 +115,9 @@ async function callGemini(apiKey: string, history: ChatTurn[], withThinkingConfi
   });
 }
 
-async function askGemini(apiKey: string, history: ChatTurn[]): Promise<string | null> {
-  let response = await callGemini(apiKey, history, true);
-  if (response.status === 400) response = await callGemini(apiKey, history, false);
+async function askGemini(apiKey: string, prompt: string, history: ChatTurn[]): Promise<string | null> {
+  let response = await callGemini(apiKey, prompt, history, true);
+  if (response.status === 400) response = await callGemini(apiKey, prompt, history, false);
 
   // 429 RESOURCE_EXHAUSTED (free-tier quota) and 403 land here too.
   if (!response.ok) {
@@ -142,19 +165,30 @@ export async function POST(request: Request): Promise<Response> {
     return json({ error: 'Send JSON: { messages: [{ role, text }] }' }, 400);
   }
 
+  const id = (body as { assistant?: unknown })?.assistant ?? 'clinic';
+  const assistant = typeof id === 'string' && Object.hasOwn(assistants, id) ? assistants[id as AssistantId] : undefined;
+  if (!assistant) return json({ error: 'Unknown assistant.' }, 400);
+
   const history = parseHistory(body);
   if (!history) return json({ error: 'The last message must be from the user.' }, 400);
 
   const question = history.at(-1)?.text ?? '';
-  const scripted = (): Response => json({ text: scriptedAnswer(question), source: 'scripted' });
+  const scripted = (): Response => json({ ...assistant.scriptedReply(question), source: 'scripted' });
 
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey) return scripted();
   if (overLimit(clientIp(request))) return scripted();
 
   try {
-    const text = await askGemini(apiKey, history);
-    return text ? json({ text, source: 'ai' }) : scripted();
+    const raw = await askGemini(apiKey, assistant.systemPrompt(), history);
+    if (!raw) return scripted();
+    // Only assistants that offer a handoff get their reply parsed for one; for
+    // the rest a stray HANDOFF line is just text (the clinic never asks for it).
+    const reply = assistant.handoffOptions ? parseHandoff(raw, assistant.handoffOptions) : { text: raw };
+    if (!reply.text && !reply.handoff) return scripted();
+    // A reply that was nothing but the HANDOFF line still deserves a sentence.
+    const text = reply.text || 'Here’s a summary of your project. Check it over, then use the button to fill in the contact form.';
+    return json({ ...reply, text, source: 'ai' });
   } catch (error) {
     // Timeouts (AbortSignal) and network failures.
     console.warn('[chat] Gemini request failed; using scripted answer', error);

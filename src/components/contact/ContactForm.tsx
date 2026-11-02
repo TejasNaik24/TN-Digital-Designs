@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from './Field';
 import { buildMailto, isContactConfigured, sendEnquiry } from '@/lib/contact';
 import { EASE_EXPO } from '@/lib/motion';
-import { onQuoteRequest } from '@/lib/quote';
-import { PROJECT_TYPES } from '@/data/projectTypes';
+import { onContactPrefill } from '@/lib/quote';
+import { BUDGETS, PROJECT_TYPES } from '@/data/projectTypes';
 import {
   EMPTY_CONTACT,
   validateAll,
@@ -14,14 +14,6 @@ import {
   type ContactErrors,
   type ContactValues,
 } from '@/lib/validation';
-
-const BUDGETS = [
-  'Under $2,500',
-  '$2,500 – $5,000',
-  '$5,000 – $10,000',
-  '$10,000+',
-  'Not sure yet',
-] as const;
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
@@ -49,17 +41,42 @@ export function ContactForm() {
   const honeypot = useRef<HTMLInputElement>(null);
   const shownAt = useRef(Date.now());
 
-  // A pricing tier's "Get a quote" pre-selects its project type. After a
-  // sent message the form is reset, so a new request starts from that tier.
+  /** Screen-reader confirmation after the assistant fills the form in. */
+  const [announcement, setAnnouncement] = useState('');
+  const [focusName, setFocusName] = useState(0);
+
+  // Pre-fill from a pricing tier ("Get a quote": project type only) or the
+  // studio assistant's handoff (type, budget, summary). Never submits. After
+  // a sent message the form resets, so a new request starts fresh.
   useEffect(
     () =>
-      onQuoteRequest((projectType) => {
-        setValues((current) => ({ ...current, projectType }));
-        setErrors((current) => ({ ...current, projectType: undefined }));
+      onContactPrefill(({ projectType, budget, details, announce }) => {
+        setValues((current) => ({
+          ...current,
+          projectType,
+          budget: budget ?? current.budget,
+          // Keep anything the visitor already wrote; add the summary after it.
+          message: details
+            ? current.message.trim()
+              ? `${current.message.trim()}\n\n${details}`
+              : details
+            : current.message,
+        }));
+        setErrors((current) => ({ ...current, projectType: undefined, message: undefined }));
         setStatus((current) => (current === 'success' ? 'idle' : current));
+        if (announce) {
+          setAnnouncement('Contact form filled in. Add your name and email to send.');
+          setFocusName((n) => n + 1);
+        }
       }),
     [],
   );
+
+  // After an assistant handoff the next step is typing a name. Runs after the
+  // render, so it also works when the form was showing its success screen.
+  useEffect(() => {
+    if (focusName) refs.name.current?.focus({ preventScroll: true });
+  }, [focusName]);
 
   const set = (field: keyof ContactValues) => (value: string) => {
     setValues((current) => ({ ...current, [field]: value }));
@@ -157,6 +174,10 @@ export function ContactForm() {
       noValidate
       className="card-surface rounded-panel p-6 sm:p-8"
     >
+      <p role="status" className="sr-only">
+        {announcement}
+      </p>
+
       {/* Honeypot. Bots fill every field they find; people never see this one.
           Moved off-screen rather than display:none, which some bots skip.
           Hidden from screen readers and the tab order, and autofill is off so

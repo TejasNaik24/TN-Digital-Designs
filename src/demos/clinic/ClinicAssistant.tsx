@@ -1,85 +1,31 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { MessageCircle, Send, X } from 'lucide-react';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { cn } from '@/lib/cn';
-import { MAX_HISTORY_TURNS, MAX_MESSAGE_CHARS, scriptedAnswer, type ChatReply, type ChatTurn } from './assistant';
+import { MAX_MESSAGE_CHARS } from '@/lib/assistant/core';
+import { useAssistantChat, useAssistantPanel } from '@/lib/assistant/useAssistantChat';
+import { scriptedAnswer } from './assistant';
 import { phone } from './data';
 
-const GREETING: ChatTurn = {
-  role: 'assistant',
-  text: 'Hi! I can answer questions about our hours, insurance, services and booking. What would you like to know?',
-};
+const GREETING =
+  'Hi! I can answer questions about our hours, insurance, services and booking. What would you like to know?';
 
 const SUGGESTIONS = ['When are you open?', 'Do you take my insurance?', 'What services do you offer?', 'Can I bring my kids?'];
 
-/**
- * Ask the server, which uses Gemini when it has a key and scripted answers
- * otherwise. If the function can't be reached at all (offline, static
- * preview), answer from the same knowledge base right here — the widget never
- * leaves a question hanging.
- */
-async function ask(history: ChatTurn[]): Promise<ChatReply> {
-  const question = history.at(-1)?.text ?? '';
-  try {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: history.slice(-MAX_HISTORY_TURNS) }),
-      signal: AbortSignal.timeout(12_000),
-    });
-    if (!response.ok) throw new Error(`status ${response.status}`);
-    const reply = (await response.json()) as Partial<ChatReply>;
-    if (typeof reply.text !== 'string' || !reply.text) throw new Error('empty reply');
-    return { text: reply.text, source: reply.source === 'ai' ? 'ai' : 'scripted' };
-  } catch {
-    return { text: scriptedAnswer(question), source: 'scripted' };
-  }
-}
+const scripted = (question: string) => ({ text: scriptedAnswer(question) });
 
 export function ClinicAssistant() {
   const [open, setOpen] = useState(false);
-  const [turns, setTurns] = useState<ChatTurn[]>([GREETING]);
   const [draft, setDraft] = useState('');
-  const [pending, setPending] = useState(false);
-  const launcher = useRef<HTMLButtonElement>(null);
-  const panel = useRef<HTMLDivElement>(null);
-  const input = useRef<HTMLInputElement>(null);
-  const log = useRef<HTMLDivElement>(null);
-
-  useFocusTrap(panel, open);
-
-  // The trap focuses the first control (Close); typing is what people came for.
-  // On close, focus goes back to the launcher here rather than via the trap:
-  // the launcher is hidden before the trap runs, so the trap only sees <body>.
-  useEffect(() => {
-    if (!open) return;
-    const raf = requestAnimationFrame(() => input.current?.focus({ preventScroll: true }));
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      cancelAnimationFrame(raf);
-      document.removeEventListener('keydown', onKeyDown);
-      launcher.current?.focus({ preventScroll: true });
-    };
-  }, [open]);
-
-  useEffect(() => {
-    log.current?.scrollTo({ top: log.current.scrollHeight });
-  }, [turns, pending]);
+  const { messages: turns, pending, send: sendMessage, fresh } = useAssistantChat({
+    assistant: 'clinic',
+    greeting: GREETING,
+    scripted,
+  });
+  const { launcher, panel, input, log } = useAssistantPanel(open, setOpen, `${turns.length}${pending}`);
 
   const send = async (text: string) => {
-    const question = text.trim().slice(0, MAX_MESSAGE_CHARS);
-    if (!question || pending) return;
-    const history: ChatTurn[] = [...turns, { role: 'user', text: question }];
-    setTurns(history);
     setDraft('');
-    setPending(true);
-    // The greeting is UI, not conversation; the server drops leading assistant turns anyway.
-    const reply = await ask(history.slice(1));
-    setTurns((current) => [...current, { role: 'assistant', text: reply.text }]);
-    setPending(false);
+    await sendMessage(text);
     input.current?.focus({ preventScroll: true });
   };
 
@@ -143,7 +89,7 @@ export function ClinicAssistant() {
             ))}
             {pending && <p className="self-start px-1 text-sm text-[var(--d-muted)]">Typing…</p>}
 
-            {turns.length === 1 && (
+            {fresh && (
               <ul aria-label="Suggested questions" className="mt-1 flex flex-wrap gap-2">
                 {SUGGESTIONS.map((question) => (
                   <li key={question}>

@@ -1,8 +1,19 @@
 import { Section, Shell } from '@/components/layout/Section';
 import { Reveal } from '@/components/ui/Reveal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
+import { Gauge, GitBranch, Layers3, MessagesSquare, Ruler, Zap, type LucideIcon } from 'lucide-react';
 import { reasons } from '@/data/why';
 import { technologies } from '@/data/tech';
+
+/** Icons stay here, not in the data, so the data stays importable server-side. */
+const icons: Record<string, LucideIcon> = {
+  ownership: MessagesSquare,
+  'design-engineering': Layers3,
+  custom: Ruler,
+  'full-stack': GitBranch,
+  fast: Zap,
+  performance: Gauge,
+};
 
 export function WhyMe() {
   return (
@@ -17,7 +28,7 @@ export function WhyMe() {
 
         <div className="mt-14 grid gap-x-10 gap-y-px border-t border-hairline sm:grid-cols-2 lg:mt-16 lg:grid-cols-3">
           {reasons.map((reason, index) => {
-            const Icon = reason.icon;
+            const Icon = icons[reason.id] ?? Zap;
             return (
               <Reveal key={reason.title} delay={(index % 3) * 0.06}>
                 <div className="group flex h-full flex-col border-b border-hairline py-8">
