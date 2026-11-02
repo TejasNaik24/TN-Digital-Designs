@@ -9,8 +9,8 @@ export function Work() {
         <SectionHeading
           id="work-heading"
           label="Selected work"
-          title="Built to show what’s possible."
-          lede="Self-directed concept builds, each one exploring how a different kind of business could feel online. Every project here is labelled as a concept — none of them are client work."
+          title="Websites for the businesses on your street."
+          lede="Three fictional local businesses, each with a real, working website you can click through. They’re concepts, not clients — built to show what your business could have."
         />
 
         <div className="mt-14 lg:mt-16">

@@ -9,9 +9,9 @@ export const site = {
   monogram: 'TN',
   role: 'Digital Studio',
 
-  /** REPLACE: swap in a custom domain when there is one (also in index.html,
-   *  public/robots.txt and public/sitemap.xml). */
-  url: 'https://tn-digital.com',
+  /** From VITE_SITE_URL (set in vite.config.ts, with its default). To move to
+   *  a custom domain, change that env var — nothing else. No trailing slash. */
+  url: import.meta.env.VITE_SITE_URL,
 
   email: 'naik.tejas11@gmail.com',
 
@@ -48,6 +48,7 @@ export const navLinks = [
   { label: 'Services', href: '#services' },
   { label: 'Work', href: '#work' },
   { label: 'Process', href: '#process' },
+  { label: 'Pricing', href: '#pricing' },
   { label: 'Questions', href: '#faq' },
   { label: 'Contact', href: '#contact' },
 ] as const;

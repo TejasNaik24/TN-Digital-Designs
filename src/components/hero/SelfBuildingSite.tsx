@@ -1,6 +1,8 @@
 import { AnimatePresence, motion, useInView } from 'motion/react';
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { cn } from '@/lib/cn';
+import { projects } from '@/data/projects';
+import { ProjectVisual } from '@/components/projects/ProjectVisual';
 import { EASE_EXPO } from '@/lib/motion';
 import { useReducedMotionSafe } from '@/hooks/useReducedMotionSafe';
 
@@ -320,70 +322,58 @@ function StudioLayout() {
   );
 }
 
-/* ── Layout C — an editorial portfolio ──────────────────────────────────── */
+/* ── Layout C — a portfolio of the real concept sites ───────────────────── */
 
-const WORKS = [
-  {
-    name: 'Coastal House',
-    year: '2024',
-    wash: 'radial-gradient(70% 70% at 40% 30%, rgb(77 141 255 / 0.3), transparent 72%)',
-  },
-  {
-    name: 'Concrete Chapel',
-    year: '2025',
-    wash: 'radial-gradient(70% 70% at 60% 40%, rgb(139 92 246 / 0.3), transparent 72%)',
-  },
-  {
-    name: 'Glass Pavilion',
-    year: '2026',
-    wash: 'radial-gradient(70% 70% at 50% 60%, rgb(34 211 238 / 0.22), transparent 72%)',
-  },
-];
-
-function EditorialLayout() {
+/**
+ * The one layout that shows actual work: each tile is the same live miniature
+ * the Work section uses, drawn from the demo's own brand tokens. These used to
+ * be three gradient washes captioned with invented project names; now every
+ * tile is a site a visitor can open and click through.
+ */
+function PortfolioLayout() {
   return (
     <div className="flex h-full flex-col">
       <motion.div variants={rise} className="flex items-center justify-between">
         <span
-          className="font-semibold tracking-[0.12em] text-white/85"
-          style={{ fontSize: '1.9cqw' }}
+          className="font-semibold tracking-[-0.02em] text-white/90"
+          style={{ fontSize: '2cqw' }}
         >
-          ATELIER
+          Tejas Naik
         </span>
         <div className="flex gap-[2.6cqw] text-white/40">
           <span style={{ fontSize: '1.5cqw' }}>Work</span>
-          <span style={{ fontSize: '1.5cqw' }}>Studio</span>
+          <span style={{ fontSize: '1.5cqw' }}>Process</span>
           <span style={{ fontSize: '1.5cqw' }}>Contact</span>
         </div>
       </motion.div>
 
-      <div className="mt-[5.5cqw] flex flex-col items-center gap-[1cqw] text-center">
+      <div className="mt-[5cqw] flex flex-col items-center gap-[1cqw] text-center">
         <div className="flex flex-col items-center gap-[0.8cqw] font-semibold tracking-[-0.035em] text-white/92">
-          <Txt size={4.6}>Spaces that hold</Txt>
-          <Txt size={4.6}>their silence.</Txt>
+          <Txt size={4.6}>Websites for the</Txt>
+          <Txt size={4.6}>shops on your street.</Txt>
         </div>
-        <div className="mt-[1.4cqw] text-white/35">
-          <Txt size={1.55}>Selected works · 2019—2026</Txt>
+        <div className="mt-[1.4cqw] text-white/40">
+          <Txt size={1.55}>A restaurant, a dentist and a gym</Txt>
         </div>
       </div>
 
-      <div className="mt-[5cqw] grid flex-1 grid-cols-3 gap-[2cqw]">
-        {WORKS.map((work) => (
-          <Block key={work.name} className="relative overflow-hidden">
-            <div className="absolute inset-0" style={{ background: work.wash }} />
-            <div className="absolute inset-x-0 bottom-0 h-[55%] bg-[linear-gradient(to_top,rgb(5_8_16/0.85),transparent)]" />
-            <div className="absolute inset-x-[9%] bottom-[9%]">
-              <div
-                className="truncate font-medium text-white/85"
-                style={{ fontSize: '1.5cqw' }}
-              >
-                {work.name}
-              </div>
-              <div className="text-white/35" style={{ fontSize: '1.3cqw' }}>
-                {work.year}
-              </div>
+      <div className="mt-auto grid grid-cols-3 gap-[2cqw]">
+        {projects.map((project) => (
+          <motion.div key={project.slug} variants={rise} className="flex min-w-0 flex-col">
+            {/* Same 16:10 as the Work cards, so the preview is never cropped. */}
+            <div className="aspect-[16/10] overflow-hidden rounded-[1.2cqw] border border-white/[0.07]">
+              <ProjectVisual kind={project.slug} />
             </div>
-          </Block>
+            <div
+              className="mt-[1.1cqw] truncate font-medium text-white/85"
+              style={{ fontSize: '1.5cqw' }}
+            >
+              {project.title}
+            </div>
+            <div className="truncate text-white/40" style={{ fontSize: '1.3cqw' }}>
+              {project.category}
+            </div>
+          </motion.div>
         ))}
       </div>
     </div>
@@ -398,7 +388,7 @@ function EditorialLayout() {
 export const buildLayouts = [
   { id: 'marketing', label: 'marketing-site', Component: MarketingLayout },
   { id: 'studio', label: 'studio-site', Component: StudioLayout },
-  { id: 'editorial', label: 'portfolio', Component: EditorialLayout },
+  { id: 'portfolio', label: 'portfolio', Component: PortfolioLayout },
 ] as const;
 
 /**

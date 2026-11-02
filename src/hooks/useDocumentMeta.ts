@@ -11,10 +11,9 @@ import { useEffect } from 'react';
  * Deliberately not `react-helmet`: this is ~40 lines against a dependency, and
  * the brief calls for keeping dependencies minimal.
  *
- * Note this runs client-side, so it updates the tab and anything that executes
- * JS. Crawlers that read only the initial HTML still see the index.html
- * defaults — fine for this site, but worth knowing before relying on it for
- * per-route social previews.
+ * This keeps the tab and in-app navigation right. Crawlers and link previewers
+ * that don't run JS get the same values from the per-route HTML the `seo()`
+ * plugin writes at build time (see src/data/pageMeta.ts).
  */
 
 type Meta = {
@@ -50,15 +49,27 @@ function setMetaProperty(property: string, content: string) {
   }, content);
 }
 
+/** Every tag this hook touches, so leaving a route can put each one back. */
+const MANAGED = [
+  'meta[name="description"]',
+  'meta[property="og:title"]',
+  'meta[property="og:description"]',
+  'meta[property="og:url"]',
+  'meta[name="twitter:title"]',
+  'meta[name="twitter:description"]',
+];
+
 export function useDocumentMeta({ title, description, url }: Meta): void {
   useEffect(() => {
     // Capture what was there so leaving a route restores the site defaults
-    // rather than leaking the last project's title onto the homepage.
+    // rather than leaking the last page's title, preview text or canonical
+    // onto the homepage.
     const previousTitle = document.title;
-    const previousDescription =
-      document.head
-        .querySelector('meta[name="description"]')
-        ?.getAttribute('content') ?? '';
+    const previous = MANAGED.map(
+      (selector) => [selector, document.head.querySelector(selector)?.getAttribute('content')] as const,
+    );
+    const canonicalTag = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    const previousCanonical = canonicalTag?.getAttribute('href');
 
     document.title = title;
     setMetaName('description', description);
@@ -69,9 +80,7 @@ export function useDocumentMeta({ title, description, url }: Meta): void {
 
     if (url) {
       setMetaProperty('og:url', url);
-      let canonical = document.head.querySelector<HTMLLinkElement>(
-        'link[rel="canonical"]',
-      );
+      let canonical = canonicalTag;
       if (!canonical) {
         canonical = document.createElement('link');
         canonical.rel = 'canonical';
@@ -82,7 +91,12 @@ export function useDocumentMeta({ title, description, url }: Meta): void {
 
     return () => {
       document.title = previousTitle;
-      if (previousDescription) setMetaName('description', previousDescription);
+      for (const [selector, content] of previous) {
+        if (content != null) document.head.querySelector(selector)?.setAttribute('content', content);
+      }
+      if (previousCanonical != null) {
+        document.head.querySelector('link[rel="canonical"]')?.setAttribute('href', previousCanonical);
+      }
     };
   }, [title, description, url]);
 }

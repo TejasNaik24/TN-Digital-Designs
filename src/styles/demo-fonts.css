@@ -1,0 +1,7 @@
+/* Typefaces for the three concept businesses (see src/demos/brands.ts).
+   Only @font-face declarations — a browser downloads a face the first time text
+   actually uses it, so these cost nothing until a demo or preview is on screen.
+   Imported extension-less: these packages' export maps append `.css` themselves. */
+@import '@fontsource-variable/bricolage-grotesque/standard';
+@import '@fontsource-variable/figtree/wght';
+@import '@fontsource-variable/big-shoulders-display/wght';

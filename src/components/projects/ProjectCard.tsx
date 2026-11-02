@@ -6,7 +6,15 @@ import { ConceptBadge } from './ConceptBadge';
 import type { Project } from '@/data/projects';
 import { useSpotlight } from '@/hooks/useSpotlight';
 
-export function ProjectCard({ project }: { project: Project }) {
+export function ProjectCard({
+  project,
+  headingLevel = 'h3',
+}: {
+  project: Project;
+  /** h3 under the homepage's Work <h2>; h2 on /work, where the page title is the <h1>. */
+  headingLevel?: 'h2' | 'h3';
+}) {
+  const Heading = headingLevel;
   const { ref, onPointerMove } = useSpotlight<HTMLDivElement>();
 
   return (
@@ -33,22 +41,9 @@ export function ProjectCard({ project }: { project: Project }) {
       >
         <div className="aspect-[16/10] overflow-hidden">
           <div className="size-full transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.035]">
-            <ProjectVisual
-              kind={project.heroVisual}
-              accent={project.accent}
-              name={project.title}
-            />
+            <ProjectVisual kind={project.slug} />
           </div>
         </div>
-        <div
-          aria-hidden="true"
-          className={cn(
-            'pointer-events-none absolute inset-0',
-            project.featured
-              ? 'bg-[linear-gradient(to_top,rgb(4_6_12/0.55),transparent_45%)] lg:bg-[linear-gradient(to_right,transparent_60%,rgb(4_6_12/0.5))]'
-              : 'bg-[linear-gradient(to_top,rgb(4_6_12/0.55),transparent_45%)]',
-          )}
-        />
       </div>
 
       {/* Meta */}
@@ -63,22 +58,25 @@ export function ProjectCard({ project }: { project: Project }) {
           <ConceptBadge type={project.type} />
         </div>
 
-        <h3 className="mt-5 text-[1.375rem] font-medium tracking-[-0.025em] text-ink">
+        <Heading className="mt-5 text-[1.375rem] font-medium tracking-[-0.025em] text-ink">
           {/* A real link, not a button with an onClick: this gives the card an
               href, so it supports cmd-click, middle-click and copy-link like
               any other link on the web. `after:absolute after:inset-0` keeps
               the entire card as the hit target. */}
           <Link
             to={`/work/${project.slug}`}
-            aria-label={`${project.title} — view case study`}
+            aria-label={`${project.title} — open the live concept site`}
             className="text-left after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
           >
             {project.title}
           </Link>
-        </h3>
+        </Heading>
 
         <p className="mt-3 max-w-lg text-[0.9375rem] leading-relaxed text-ink-2">
           {project.shortDescription}
+        </p>
+        <p className="mt-3 max-w-lg text-[0.875rem] leading-relaxed text-ink-3">
+          <span className="text-ink-2">Try it:</span> {project.tryIt}
         </p>
 
         <div className="mt-6 flex items-end justify-between gap-6 border-t border-hairline pt-5">

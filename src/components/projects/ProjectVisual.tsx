@@ -1,408 +1,211 @@
+import '@/styles/demo-fonts.css';
 import { cn } from '@/lib/cn';
-import type { ProjectVisualKind } from '@/data/projects';
+import { brands, GYM_BODY_FONT, type DemoSlug } from '@/demos/brands';
 
 /**
- * Project previews, drawn rather than screenshotted.
+ * Project previews: miniatures of each concept's real homepage, drawn in DOM
+ * so they stay sharp at any size and need no screenshots to go stale.
  *
- * Four dark product surfaces, each composed to look like a real site for that
- * kind of business, taking its accent from the project's own colour.
+ * Each one uses its business's own palette and typeface from `demos/brands`,
+ * the same tokens the full demo site uses — so the card, the hero mockup and
+ * the live site always agree.
  *
- * The copy is REAL TEXT, not grey placeholder bars. Bars read as a skeleton
- * loader — an unfinished mockup — which is exactly the wrong impression for a
- * section whose job is to prove finished work. Real words make these read as
- * websites. At phone widths the small type becomes texture, which is fine; the
- * composition still holds.
- *
- * REPLACE: when a real screenshot exists, render an <img> here instead. The
- * card and modal don't care which they get.
+ * Copy is REAL TEXT, not grey placeholder bars (bars read as a skeleton loader
+ * — an unfinished mockup). Everything is sized in `cqw`, so one component works
+ * as a full card and as a tiny tile inside the hero device.
  */
 
-type VisualProps = { accent: string; name: string };
+/* ── Ferro — restaurant ─────────────────────────────────────────────────── */
 
-const surface = 'rounded-[1.2cqw] border border-white/[0.07] bg-white/[0.03]';
+const MENU = [
+  ['Charred leeks, hazelnut', '11'],
+  ['Whipped ricotta, chili honey', '12'],
+  ['Wood-fire flatbread, nduja', '14'],
+  ['Pici, brown butter, sage', '19'],
+  ['Tagliatelle, pork ragù', '23'],
+  ['Half chicken, salsa verde', '27'],
+];
 
-function Mark({ accent, size = 2.4 }: { accent: string; size?: number }) {
+function RestaurantVisual() {
+  const b = brands.restaurant;
+  const c = b.colors;
   return (
-    <div
-      className="shrink-0 rounded-[0.6cqw]"
-      style={{ width: `${size}cqw`, height: `${size}cqw`, background: accent, opacity: 0.9 }}
-    />
-  );
-}
-
-function Nav({
-  accent,
-  name,
-  links,
-  cta,
-}: {
-  accent: string;
-  name: string;
-  links: string[];
-  cta?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-[1.3cqw]">
-        <Mark accent={accent} />
-        <span
-          className="font-semibold tracking-[-0.02em] text-white/85"
-          style={{ fontSize: '2.1cqw' }}
-        >
-          {name}
+    <div className="flex h-full flex-col p-[4.2cqw]" style={{ background: c.ground, color: c.ink, fontFamily: b.font }}>
+      <div className="flex items-center justify-between" style={{ fontSize: '1.7cqw' }}>
+        <span className="font-bold" style={{ fontSize: '2.3cqw', fontStretch: '75%' }}>
+          {b.name}
         </span>
-      </div>
-      <div className="flex items-center gap-[2.2cqw]">
-        {links.map((link) => (
-          <span key={link} className="text-white/40" style={{ fontSize: '1.7cqw' }}>
-            {link}
-          </span>
-        ))}
-        {cta && (
+        <div className="flex items-center gap-[2.2cqw]" style={{ color: c.muted }}>
+          <span>Menu</span>
+          <span>Visit</span>
           <span
-            className="rounded-full px-[2.2cqw] py-[1cqw] font-medium leading-none text-white"
-            style={{ fontSize: '1.6cqw', background: accent, opacity: 0.92 }}
+            className="rounded-full px-[2cqw] py-[0.8cqw] font-semibold"
+            style={{ background: c.accent, color: c.onAccent }}
           >
-            {cta}
+            Book a table
           </span>
-        )}
+        </div>
+      </div>
+
+      <div className="mt-[4cqw] flex flex-1 gap-[4cqw]">
+        <div className="flex w-[52%] flex-col justify-between">
+          <div
+            className="font-extrabold leading-[0.88] tracking-[-0.02em]"
+            style={{ fontSize: '9cqw', fontStretch: '75%' }}
+          >
+            Fire,
+            <br />
+            bread,
+            <br />
+            company.
+          </div>
+          <div className="flex items-center gap-[1.2cqw]" style={{ fontSize: '1.6cqw' }}>
+            <span className="size-[1.2cqw] rounded-full" style={{ background: '#3f8a3a' }} />
+            <span className="font-semibold">Open now</span>
+            <span style={{ color: c.muted }}>until 10 pm</span>
+          </div>
+        </div>
+
+        <div
+          className="flex flex-1 flex-col rounded-[1.4cqw] p-[2.6cqw]"
+          style={{ background: c.surface, border: `1px solid ${c.line}` }}
+        >
+          <div className="font-bold" style={{ fontSize: '2cqw', fontStretch: '80%' }}>
+            Tonight
+          </div>
+          <div className="mt-[1.6cqw] flex flex-col gap-[1.4cqw]">
+            {MENU.map(([dish, price]) => (
+              <div key={dish} className="flex items-baseline gap-[1cqw]" style={{ fontSize: '1.55cqw' }}>
+                <span className="truncate">{dish}</span>
+                <span className="flex-1 border-b border-dotted" style={{ borderColor: c.line }} />
+                <span className="font-semibold">{price}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-/* ── Atelier Nord — editorial architecture portfolio ────────────────────── */
+/* ── Northgate — dental clinic ──────────────────────────────────────────── */
 
-function EditorialVisual({ accent, name }: VisualProps) {
-  /** Massed volumes, read as an elevation. Enough form to say "architecture"
-   *  without pretending to be a photograph.
-   *
-   *  `windows` is what stops this reading as a bar chart — five plain
-   *  rectangles of stepped height is exactly a column chart, which is the
-   *  wrong signal on a card whose whole job is to say "architecture studio".
-   *  A few horizontal floor lines and a lit window turn the same shapes into
-   *  buildings. */
-  /** Fenestration is what stops five stepped rectangles reading as a column
-   *  chart — the worst possible signal on a card about an architecture
-   *  practice. A window grid on both axes plus a lit window reads as
-   *  buildings. Mirrors the elevation in the case study's screens. */
-  const massing = [
-    { left: '8%', width: '17%', height: '46%', tone: 0.1, rows: 3, cols: 3, lit: [2] },
-    { left: '25%', width: '13%', height: '68%', tone: 0.16, rows: 5, cols: 2, lit: [3] },
-    { left: '38%', width: '22%', height: '88%', tone: 0.24, rows: 7, cols: 3, lit: [4, 13] },
-    { left: '60%', width: '15%', height: '58%', tone: 0.14, rows: 4, cols: 2, lit: [5] },
-    { left: '75%', width: '19%', height: '36%', tone: 0.09, rows: 2, cols: 3, lit: [] },
-  ];
-
+function ClinicVisual() {
+  const b = brands.clinic;
+  const c = b.colors;
   return (
-    <div className="flex h-full flex-col p-[4cqw]">
-      <div className="flex items-center justify-between">
-        <span
-          className="font-semibold uppercase tracking-[0.14em] text-white/85"
-          style={{ fontSize: '1.9cqw' }}
-        >
-          {name}
+    <div className="flex h-full flex-col p-[4.2cqw]" style={{ background: c.ground, color: c.ink, fontFamily: b.font }}>
+      <div className="flex items-center justify-between" style={{ fontSize: '1.65cqw' }}>
+        <span className="flex items-center gap-[1cqw] font-bold" style={{ fontSize: '2.1cqw' }}>
+          <span className="size-[2.3cqw] rounded-full" style={{ background: c.accent }} />
+          {b.name}
         </span>
-        <div className="flex gap-[2.2cqw] text-white/40">
-          {['Works', 'Studio', 'Contact'].map((link) => (
-            <span key={link} style={{ fontSize: '1.6cqw' }}>
-              {link}
-            </span>
+        <div className="flex items-center gap-[2.2cqw]" style={{ color: c.muted }}>
+          <span>Services</span>
+          <span>Team</span>
+          <span
+            className="rounded-[1cqw] px-[2cqw] py-[0.8cqw] font-semibold"
+            style={{ background: c.accent, color: c.onAccent }}
+          >
+            Book a visit
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-[5cqw] flex flex-1 gap-[4cqw]">
+        <div className="w-[50%]">
+          <div className="font-semibold leading-[1.08] tracking-[-0.02em]" style={{ fontSize: '4.6cqw' }}>
+            A dentist you won’t dread visiting.
+          </div>
+          <div className="mt-[1.8cqw] leading-[1.5]" style={{ fontSize: '1.6cqw', color: c.muted }}>
+            Same-week appointments, clear prices, and a team that explains everything first.
+          </div>
+        </div>
+
+        <div className="flex flex-1 flex-col gap-[1.4cqw] rounded-[1.6cqw] p-[2.4cqw]" style={{ background: c.surface }}>
+          <div className="font-semibold" style={{ fontSize: '1.7cqw' }}>
+            Request a visit
+          </div>
+          {['Cleaning & check-up', 'Tue 14 · 9:30 am'].map((value) => (
+            <div
+              key={value}
+              className="rounded-[1cqw] bg-white px-[1.6cqw] py-[1.1cqw]"
+              style={{ fontSize: '1.45cqw', border: `1px solid ${c.line}` }}
+            >
+              {value}
+            </div>
           ))}
+          <div
+            className="mt-auto rounded-[1cqw] py-[1.1cqw] text-center font-semibold"
+            style={{ fontSize: '1.5cqw', background: c.accent, color: c.onAccent }}
+          >
+            Continue
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Groundwork — gym ───────────────────────────────────────────────────── */
+
+const SLOTS = [
+  ['6:00', 'Strength', true],
+  ['7:15', 'Conditioning', false],
+  ['12:00', 'Mobility', false],
+  ['18:00', 'Strength', true],
+] as const;
+
+function GymVisual() {
+  const b = brands.gym;
+  const c = b.colors;
+  return (
+    <div className="flex h-full flex-col p-[4.2cqw]" style={{ background: c.ground, color: c.ink, fontFamily: GYM_BODY_FONT }}>
+      <div className="flex items-center justify-between" style={{ fontSize: '1.6cqw' }}>
+        <span className="font-extrabold uppercase" style={{ fontSize: '2.6cqw', fontFamily: b.font }}>
+          {b.name}
+        </span>
+        <div className="flex items-center gap-[2.2cqw]" style={{ color: c.muted }}>
+          <span>Schedule</span>
+          <span>Pricing</span>
+          <span
+            className="px-[2cqw] py-[0.8cqw] font-bold"
+            style={{ background: c.accent, color: c.onAccent }}
+          >
+            Free trial
+          </span>
         </div>
       </div>
 
       <div className="mt-[3.5cqw] flex flex-1 gap-[4cqw]">
-        <div className="flex w-[40%] flex-col justify-center">
-          <span
-            className="font-mono uppercase tracking-[0.2em]"
-            style={{ fontSize: '1.35cqw', color: accent, opacity: 0.9 }}
-          >
-            Selected work
-          </span>
-          <div
-            className="mt-[1.8cqw] font-semibold leading-[1.12] tracking-[-0.035em] text-white/90"
-            style={{ fontSize: '4.2cqw' }}
-          >
-            Light, mass, and
-            <br />
-            the space between.
-          </div>
-          <div
-            className="mt-[1.8cqw] leading-[1.5] text-white/38"
-            style={{ fontSize: '1.55cqw' }}
-          >
-            An architecture practice
-            <br />
-            working in northern light.
-          </div>
-          <div
-            className="mt-[2cqw] h-px w-[30%]"
-            style={{ background: accent, opacity: 0.5 }}
-          />
-        </div>
-
-        <div className={cn(surface, 'relative flex-1 overflow-hidden')}>
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(180deg, ${accent}26 0%, transparent 62%), radial-gradient(60% 45% at 72% 12%, #ffffff1c, transparent 72%)`,
-            }}
-          />
-          <div className="absolute inset-x-0 bottom-0 top-0">
-            {massing.map((block, index) => (
-              <div
-                key={index}
-                className="absolute bottom-0 overflow-hidden"
-                style={{
-                  left: block.left,
-                  width: block.width,
-                  height: block.height,
-                  background: `rgb(255 255 255 / ${block.tone})`,
-                  borderTop: '1px solid rgb(255 255 255 / 0.28)',
-                }}
-              >
-                <div
-                  className="grid h-full w-full gap-[11%] p-[13%]"
-                  style={{
-                    gridTemplateColumns: `repeat(${block.cols}, 1fr)`,
-                    gridTemplateRows: `repeat(${block.rows}, 1fr)`,
-                  }}
-                >
-                  {Array.from({ length: block.rows * block.cols }).map((_, cell) => (
-                    <span
-                      key={cell}
-                      style={{
-                        background: block.lit.includes(cell)
-                          ? accent
-                          : 'rgb(255 255 255 / 0.16)',
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="absolute inset-x-0 bottom-0 h-[30%] bg-[linear-gradient(to_top,rgb(5_8_16/0.92),transparent)]" />
-          <div className="absolute inset-x-[6%] bottom-[7%]">
-            <div
-              className="font-medium text-white/85"
-              style={{ fontSize: '1.6cqw' }}
-            >
-              Rill House
-            </div>
-            <div className="text-white/35" style={{ fontSize: '1.35cqw' }}>
-              Nordland · 2025
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Vela — AI product site ─────────────────────────────────────────────── */
-
-const VELA_STATS = [
-  { label: 'Requests', value: '2.4M' },
-  { label: 'p95 latency', value: '180ms' },
-  { label: 'Uptime', value: '99.9%' },
-];
-
-function ProductVisual({ accent, name }: VisualProps) {
-  return (
-    <div className="flex h-full flex-col p-[3.6cqw]">
-      <Nav accent={accent} name={name} links={['Docs', 'Pricing']} cta="Get started" />
-
-      <div className="mt-[4.5cqw] flex flex-1 gap-[3.2cqw]">
-        <div className="flex w-[42%] flex-col justify-center">
-          <span
-            className="w-fit rounded-full px-[1.6cqw] py-[0.7cqw] font-medium leading-none"
-            style={{ fontSize: '1.35cqw', background: `${accent}26`, color: accent }}
-          >
-            Now in beta
-          </span>
-          <div
-            className="mt-[1.8cqw] font-semibold leading-[1.12] tracking-[-0.035em] text-white/90"
-            style={{ fontSize: '3.8cqw' }}
-          >
-            Ship AI features,
-            <br />
-            not prototypes.
-          </div>
-          <div
-            className="mt-[1.6cqw] leading-[1.5] text-white/38"
-            style={{ fontSize: '1.5cqw' }}
-          >
-            One API for retrieval, evals,
-            <br />
-            and everything after the demo.
-          </div>
-          <div className="mt-[2.2cqw] flex gap-[1.4cqw]">
-            <span
-              className="rounded-full px-[2.2cqw] py-[1.1cqw] font-medium leading-none text-white"
-              style={{ fontSize: '1.5cqw', background: accent, opacity: 0.92 }}
-            >
-              Start building
-            </span>
-            <span
-              className="rounded-full border border-white/15 px-[2.2cqw] py-[1.1cqw] font-medium leading-none text-white/65"
-              style={{ fontSize: '1.5cqw' }}
-            >
-              Read docs
-            </span>
-          </div>
-        </div>
-
-        <div className={cn(surface, 'relative flex-1 overflow-hidden p-[2.2cqw]')}>
-          <div className="flex items-center justify-between">
-            <span className="font-medium text-white/70" style={{ fontSize: '1.5cqw' }}>
-              Production
-            </span>
-            <div className="flex gap-[0.7cqw]">
-              <div className="size-[1.2cqw] rounded-full bg-white/12" />
-              <div className="size-[1.2cqw] rounded-full bg-white/12" />
-            </div>
-          </div>
-
-          <div className="mt-[2cqw] grid grid-cols-3 gap-[1.3cqw]">
-            {VELA_STATS.map((stat, index) => (
-              <div
-                key={stat.label}
-                className="rounded-[0.8cqw] border border-white/[0.06] p-[1.1cqw]"
-                style={{ background: index === 0 ? `${accent}1f` : '#ffffff08' }}
-              >
-                <div className="truncate text-white/40" style={{ fontSize: '1.2cqw' }}>
-                  {stat.label}
-                </div>
-                <div
-                  className="mt-[0.5cqw] font-semibold tracking-[-0.02em]"
-                  style={{
-                    fontSize: '2cqw',
-                    color: index === 0 ? accent : 'rgb(255 255 255 / 0.88)',
-                  }}
-                >
-                  {stat.value}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <svg
-            viewBox="0 0 200 60"
-            preserveAspectRatio="none"
-            className="mt-[1.8cqw] h-[30%] w-full"
-          >
-            <path
-              d="M0 50 C 18 46, 30 28, 46 27 S 78 40, 94 32 S 128 10, 146 15 S 178 6, 200 3"
-              fill="none"
-              stroke={accent}
-              strokeWidth="2"
-              strokeLinecap="round"
-              opacity="0.9"
-            />
-            <path
-              d="M0 50 C 18 46, 30 28, 46 27 S 78 40, 94 32 S 128 10, 146 15 S 178 6, 200 3 L 200 60 L 0 60 Z"
-              fill={accent}
-              opacity="0.13"
-            />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Maison Levant — restaurant ─────────────────────────────────────────── */
-
-/** Monument is a hotel, so the bar books a stay — arrive/depart/guests —
- *  not a dinner table. */
-const BOOKING = [
-  { label: 'Arrive', value: 'Fri 14 Mar' },
-  { label: 'Depart', value: 'Sun 16 Mar' },
-  { label: 'Guests', value: 'Two' },
-];
-
-function HospitalityVisual({ accent, name }: VisualProps) {
-  return (
-    <div className="relative h-full overflow-hidden">
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `radial-gradient(75% 65% at 50% 8%, ${accent}2e, transparent 68%), radial-gradient(60% 50% at 12% 100%, ${accent}1c, transparent 70%)`,
-        }}
-      />
-
-      <div className="relative flex h-full flex-col p-[3.6cqw]">
-        <div className="flex items-center justify-between">
-          <span
-            className="uppercase tracking-[0.24em] text-white/45"
-            style={{ fontSize: '1.35cqw' }}
-          >
-            Rooms
-          </span>
-          <span
-            className="rounded-full px-[2cqw] py-[0.9cqw] font-medium leading-none"
-            style={{
-              fontSize: '1.45cqw',
-              border: `1px solid ${accent}66`,
-              color: accent,
-            }}
-          >
-            Reserve
-          </span>
-        </div>
-
-        <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <span
-            className="uppercase tracking-[0.3em]"
-            style={{ fontSize: '1.3cqw', color: accent, opacity: 0.85 }}
-          >
-            {name}
-          </span>
-          <div
-            className="mt-[2cqw] font-semibold leading-[1.1] tracking-[-0.035em] text-white/92"
-            style={{ fontSize: '4.6cqw' }}
-          >
-            A house that
-            <br />
-            keeps its own hours.
-          </div>
-          <div
-            className="mt-[1.6cqw] text-white/38"
-            style={{ fontSize: '1.5cqw' }}
-          >
-            Fourteen rooms above the river
-          </div>
-        </div>
-
-        {/* Booking bar — permanently reachable, which is the whole point. */}
         <div
-          className={cn(surface, 'flex items-center gap-[2cqw] p-[1.5cqw]')}
-          style={{ background: '#ffffff09' }}
+          className="w-[48%] font-black uppercase leading-[0.86]"
+          style={{ fontSize: '10cqw', fontFamily: b.font }}
         >
-          {BOOKING.map((field, index) => (
-            <div key={field.label} className="flex items-center gap-[2cqw]">
-              {index > 0 && <div className="h-[3cqw] w-px bg-white/10" />}
-              <div>
-                <div className="text-white/35" style={{ fontSize: '1.15cqw' }}>
-                  {field.label}
-                </div>
-                <div
-                  className="font-medium text-white/80"
-                  style={{ fontSize: '1.45cqw' }}
-                >
-                  {field.value}
-                </div>
-              </div>
+          Get
+          <br />
+          strong
+          <br />
+          <span className="mt-[0.8cqw] inline-block px-[0.8cqw] leading-[0.92]" style={{ background: c.accent }}>
+            here.
+          </span>
+        </div>
+
+        <div className="flex flex-1 flex-col" style={{ fontSize: '1.55cqw' }}>
+          <div className="font-extrabold uppercase" style={{ fontSize: '2.3cqw', fontFamily: b.font }}>
+            Today
+          </div>
+          {SLOTS.map(([time, name, full]) => (
+            <div
+              key={time}
+              className="flex items-center gap-[1.6cqw] py-[1.1cqw]"
+              style={{ borderTop: `1px solid ${c.line}` }}
+            >
+              <span className="w-[6cqw] font-bold tabular-nums">{time}</span>
+              <span className="flex-1">{name}</span>
+              <span style={{ color: c.muted }}>{full ? 'Waitlist' : 'Open'}</span>
             </div>
           ))}
-          <span
-            className="ml-auto rounded-full px-[2.4cqw] py-[1.1cqw] font-medium leading-none text-[#1a1206]"
-            style={{ fontSize: '1.45cqw', background: accent }}
-          >
-            Check availability
-          </span>
         </div>
       </div>
     </div>
@@ -411,32 +214,22 @@ function HospitalityVisual({ accent, name }: VisualProps) {
 
 /* ── Switch ─────────────────────────────────────────────────────────────── */
 
-const visuals: Record<ProjectVisualKind, (props: VisualProps) => React.JSX.Element> = {
-  editorial: EditorialVisual,
-  product: ProductVisual,
-  hospitality: HospitalityVisual,
+const visuals: Record<DemoSlug, () => React.JSX.Element> = {
+  restaurant: RestaurantVisual,
+  clinic: ClinicVisual,
+  gym: GymVisual,
 };
 
-export function ProjectVisual({
-  kind,
-  accent,
-  name,
-  className,
-}: {
-  kind: ProjectVisualKind;
-  accent: string;
-  name: string;
-  className?: string;
-}) {
+export function ProjectVisual({ kind, className }: { kind: DemoSlug; className?: string }) {
   const Visual = visuals[kind];
 
   return (
     <div
-      className={cn('relative size-full bg-[#050810]', className)}
+      className={cn('relative size-full overflow-hidden', className)}
       style={{ containerType: 'inline-size' }}
       aria-hidden="true"
     >
-      <Visual accent={accent} name={name} />
+      <Visual />
     </div>
   );
 }

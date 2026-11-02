@@ -14,7 +14,8 @@ import { useSpotlight } from '@/hooks/useSpotlight';
  * site's real CTA button — this is the point in the page where a founder has
  * just finished being convinced, so it needs to be the obvious next step.
  */
-function OpenSlotBand() {
+function OpenSlotBand({ headingLevel }: { headingLevel: 'h2' | 'h3' }) {
+  const Heading = headingLevel;
   const { ref, onPointerMove } = useSpotlight<HTMLDivElement>();
   const { hrefFor, onClickFor } = useAnchorNavigate();
 
@@ -40,9 +41,9 @@ function OpenSlotBand() {
       <div className="relative z-10 flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between md:gap-12">
         <div>
           <span className="mono-label text-ink-3">Open slot</span>
-          <h3 className="mt-5 text-title font-medium tracking-[-0.025em] text-ink">
+          <Heading className="mt-5 text-title font-medium tracking-[-0.025em] text-ink">
             Your company could be next.
-          </h3>
+          </Heading>
           <p className="mt-3.5 max-w-lg text-[0.9375rem] leading-relaxed text-ink-2">
             Have an idea, an outdated site, or a product that deserves a better
             digital experience? Let’s build it.
@@ -71,7 +72,14 @@ function OpenSlotBand() {
  * Editorial hierarchy rather than a uniform grid: the strongest project spans
  * both columns and gets a side-by-side treatment, the rest sit beneath it.
  */
-export function WorkGallery({ showCta = true }: { showCta?: boolean }) {
+export function WorkGallery({
+  showCta = true,
+  headingLevel = 'h3',
+}: {
+  showCta?: boolean;
+  /** Level of each card's heading — one below the heading the gallery sits under. */
+  headingLevel?: 'h2' | 'h3';
+}) {
   return (
     <>
       <div className="grid gap-4 lg:grid-cols-2">
@@ -81,7 +89,7 @@ export function WorkGallery({ showCta = true }: { showCta?: boolean }) {
             className={cn(project.featured && 'lg:col-span-2')}
           >
             <Reveal className="h-full">
-              <ProjectCard project={project} />
+              <ProjectCard project={project} headingLevel={headingLevel} />
             </Reveal>
           </div>
         ))}
@@ -90,7 +98,7 @@ export function WorkGallery({ showCta = true }: { showCta?: boolean }) {
       {showCta && (
         <Reveal>
           <div className="mt-4">
-            <OpenSlotBand />
+            <OpenSlotBand headingLevel={headingLevel} />
           </div>
         </Reveal>
       )}

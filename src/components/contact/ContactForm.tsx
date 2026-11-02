@@ -1,10 +1,12 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { AlertTriangle, Check, Loader2, Mail } from 'lucide-react';
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/Button';
 import { SelectField, TextAreaField, TextField } from './Field';
 import { buildMailto, isContactConfigured, sendEnquiry } from '@/lib/contact';
 import { EASE_EXPO } from '@/lib/motion';
+import { onQuoteRequest } from '@/lib/quote';
+import { PROJECT_TYPES } from '@/data/projectTypes';
 import {
   EMPTY_CONTACT,
   validateAll,
@@ -12,14 +14,6 @@ import {
   type ContactErrors,
   type ContactValues,
 } from '@/lib/validation';
-
-const PROJECT_TYPES = [
-  'New website',
-  'Website redesign',
-  'Web application',
-  'AI feature or integration',
-  'Something else',
-] as const;
 
 const BUDGETS = [
   'Under $2,500',
@@ -30,6 +24,10 @@ const BUDGETS = [
 ] as const;
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
+
+/** A person can't read the form, fill four fields and write a message faster
+ *  than this. Scripts that post the moment the page loads can. */
+const MIN_FILL_MS = 2000;
 
 export function ContactForm() {
   const [values, setValues] = useState<ContactValues>(EMPTY_CONTACT);
@@ -44,6 +42,24 @@ export function ContactForm() {
     projectType: useRef<HTMLSelectElement>(null),
     message: useRef<HTMLTextAreaElement>(null),
   };
+
+  /* Spam traps. Neither one ever blocks a real visitor with an error: a
+     suspected bot gets the normal "Message received" screen and nothing is
+     sent, so it has no signal to retry or adapt. */
+  const honeypot = useRef<HTMLInputElement>(null);
+  const shownAt = useRef(Date.now());
+
+  // A pricing tier's "Get a quote" pre-selects its project type. After a
+  // sent message the form is reset, so a new request starts from that tier.
+  useEffect(
+    () =>
+      onQuoteRequest((projectType) => {
+        setValues((current) => ({ ...current, projectType }));
+        setErrors((current) => ({ ...current, projectType: undefined }));
+        setStatus((current) => (current === 'success' ? 'idle' : current));
+      }),
+    [],
+  );
 
   const set = (field: keyof ContactValues) => (value: string) => {
     setValues((current) => ({ ...current, [field]: value }));
@@ -73,6 +89,13 @@ export function ContactForm() {
 
     setStatus('submitting');
     setProblem('');
+
+    const filledHoneypot = Boolean(honeypot.current?.value);
+    const tooFast = Date.now() - shownAt.current < MIN_FILL_MS;
+    if (filledHoneypot || tooFast) {
+      setStatus('success');
+      return;
+    }
 
     const result = await sendEnquiry(values);
 
@@ -119,6 +142,7 @@ export function ContactForm() {
           onClick={() => {
             setValues(EMPTY_CONTACT);
             setStatus('idle');
+            shownAt.current = Date.now();
           }}
         >
           Send another
@@ -133,6 +157,15 @@ export function ContactForm() {
       noValidate
       className="card-surface rounded-panel p-6 sm:p-8"
     >
+      {/* Honeypot. Bots fill every field they find; people never see this one.
+          Moved off-screen rather than display:none, which some bots skip.
+          Hidden from screen readers and the tab order, and autofill is off so
+          a password manager can't fill it for a real visitor. */}
+      <div aria-hidden="true" className="absolute -left-[10000px] top-auto size-px overflow-hidden">
+        <label htmlFor="contact-website">Website</label>
+        <input ref={honeypot} id="contact-website" name="website" type="text" tabIndex={-1} autoComplete="off" defaultValue="" />
+      </div>
+
       <div className="grid gap-5 sm:grid-cols-2">
         <TextField
           ref={refs.name}

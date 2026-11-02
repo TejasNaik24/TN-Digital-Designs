@@ -6,13 +6,22 @@ import { Services } from '@/components/sections/Services';
 import { Work } from '@/components/sections/Work';
 import { WhyMe } from '@/components/sections/WhyMe';
 import { Process } from '@/components/sections/Process';
+import { Pricing } from '@/components/sections/Pricing';
 import { FAQ } from '@/components/sections/FAQ';
 import { Contact } from '@/components/sections/Contact';
 import { jumpToId } from '@/lib/scroll';
+import { useDocumentMeta } from '@/hooks/useDocumentMeta';
+import { homeMeta } from '@/data/pageMeta';
+import { site } from '@/data/site';
 import type { HomeScrollState } from '@/lib/navigation';
 
 export function HomePage() {
   const { state } = useLocation();
+
+  // Set explicitly, not left to index.html: a visitor who lands on
+  // /work/clinic gets that page's tags in the initial HTML, so "restore the
+  // defaults" on the way back here would restore the clinic's.
+  useDocumentMeta({ ...homeMeta, url: `${site.url}/` });
 
   /**
    * Completes a cross-route anchor jump — someone clicked "Services" from a
@@ -40,6 +49,7 @@ export function HomePage() {
       <Work />
       <WhyMe />
       <Process />
+      <Pricing />
       <FAQ />
       <Contact />
     </>

@@ -12,7 +12,9 @@ const control = cn(
   'w-full rounded-xl border bg-surface-2/70 px-4 text-[0.9375rem] text-ink',
   'placeholder:text-ink-3',
   'transition-[border-color,box-shadow,background-color] duration-200',
-  'focus:outline-none focus:border-azure/60 focus:bg-surface-2',
+  // Full-strength azure: the border IS the focus indicator here, and at /60
+  // it measured 2.85:1 against the field, under WCAG's 3:1 for focus.
+  'focus:outline-none focus:border-azure focus:bg-surface-2',
   'focus:shadow-[0_0_0_3px_rgb(77_141_255/0.15)]',
 );
 

@@ -88,11 +88,14 @@ export function Navbar() {
           >
             <Link
               to="/"
-              aria-label="Tejas Naik — home"
               onClick={onHome ? onClickFor('top') : undefined}
               className="relative z-10 rounded-lg transition-opacity duration-200 hover:opacity-85"
             >
+              {/* Named by its visible text plus ", home" — not an aria-label,
+                  which would have to repeat the wordmark exactly for voice
+                  control ("click Tejas Naik") to work (WCAG 2.5.3). */}
               <Wordmark />
+              <span className="sr-only">, home</span>
             </Link>
 
             <nav aria-label="Primary" className="relative z-10 hidden lg:block">

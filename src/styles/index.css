@@ -23,13 +23,16 @@
   --color-hairline-strong: rgb(150 178 255 / 0.2);
 
   /* ── Text ──────────────────────────────────────────────────────────────────
-     Measured against --color-canvas: ink 17:1, ink-2 7.9:1, ink-3 4.8:1.
+     Measured against --color-canvas: ink 17:1, ink-2 7.9:1, ink-3 5.4:1.
+     ink-3 is the tight one: it also has to clear 4.5:1 on the LIGHTEST part
+     of a card-surface inside a `raised` section (≈ rgb 18 25 44), where it
+     is 4.6:1. At the old #6e7c97 it fell to 4.1:1 there.
      ink-4 sits at 2.7:1 and is DECORATION ONLY — the blueprint dimension marks
      and the pull-quote glyph, both aria-hidden. Never use it for text a
      visitor is meant to read.                                                */
   --color-ink: #eaeff8;
   --color-ink-2: #94a2be;
-  --color-ink-3: #6e7c97;
+  --color-ink-3: #76849f;
   --color-ink-4: #4a5570;
 
   /* ── Accents ───────────────────────────────────────────────────────────────
@@ -135,8 +138,10 @@
   }
 
   /* Visible, consistent, and never removed. */
+  /* `--focus-ring` lets each demo site supply a ring that's visible against its
+     own palette; azure on a light sage or white ground would be too faint. */
   :focus-visible {
-    outline: 2px solid var(--color-azure);
+    outline: 2px solid var(--focus-ring, var(--color-azure));
     outline-offset: 3px;
     border-radius: 4px;
   }

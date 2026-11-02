@@ -1,17 +1,15 @@
-import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useRef } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { AmbientBackground } from '@/components/background/AmbientBackground';
-import { Navbar } from '@/components/navigation/Navbar';
-import { Footer } from '@/components/layout/Footer';
-import { HomePage } from '@/pages/HomePage';
-import { WorkPage } from '@/pages/WorkPage';
-import { ProjectPage } from '@/pages/ProjectPage';
-import { NotFoundPage } from '@/pages/NotFoundPage';
+import { DemoPage } from '@/pages/DemoPage';
+import { StudioSite } from '@/pages/lazyStudio';
 import { jumpToTop, jumpToY } from '@/lib/scroll';
 import type { HomeScrollState } from '@/lib/navigation';
 
 /** Scroll position per history entry, so Back returns you where you were. */
 const positions = new Map<string, number>();
+/** The entry currently on screen. Set in the layout effect, the moment a new
+ *  route commits — see the scroll listener for why it's needed. */
+let activeKey = '';
 
 /**
  * Lands the new route at the right scroll position.
@@ -46,12 +44,21 @@ function useRouteScroll() {
    * frames are suspended, such as a background tab).
    */
   useEffect(() => {
-    const onScroll = () => positions.set(key, window.scrollY);
+    // Only while this entry is the one on screen. Router navigations render
+    // as transitions, so the old entry's listener is still attached when the
+    // new route's jump-to-top fires its scroll event — without this check it
+    // would record 0 over the old entry's real position, and Back would
+    // always land at the top.
+    const onScroll = () => {
+      if (activeKey === key) positions.set(key, window.scrollY);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [key]);
 
   useLayoutEffect(() => {
+    activeKey = key;
+
     // A cross-route anchor jump is HomePage's job — it has to wait for the
     // target section to exist. Don't fight it by jumping to the top first.
     if ((state as HomeScrollState)?.scrollTo) return;
@@ -64,8 +71,12 @@ function useRouteScroll() {
   }, [key, state]);
 }
 
+/** The page's <main>. Both StudioChrome and DemoPage render one with this id,
+ *  so focus handling works the same on studio and demo routes. */
+const focusMain = () => document.getElementById('main')?.focus({ preventScroll: true });
+
 /** Announces the new page to assistive tech and puts Tab back at its top. */
-function useRouteFocus(ref: RefObject<HTMLElement | null>) {
+function useRouteFocus() {
   const { key } = useLocation();
   const isFirstRender = useRef(true);
 
@@ -78,15 +89,13 @@ function useRouteFocus(ref: RefObject<HTMLElement | null>) {
     }
     // preventScroll is required — focus() scrolls its target into view by
     // default, which would undo the landing useRouteScroll just performed.
-    ref.current?.focus({ preventScroll: true });
-  }, [key, ref]);
+    focusMain();
+  }, [key]);
 }
 
 export default function App() {
-  const mainRef = useRef<HTMLElement>(null);
-
   useRouteScroll();
-  useRouteFocus(mainRef);
+  useRouteFocus();
 
   return (
     <>
@@ -99,29 +108,28 @@ export default function App() {
         onClick={(event) => {
           event.preventDefault();
           jumpToTop();
-          mainRef.current?.focus({ preventScroll: true });
+          focusMain();
         }}
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:border focus:border-hairline-strong focus:bg-elevated focus:px-5 focus:py-3 focus:text-sm focus:text-ink"
       >
         Skip to content
       </a>
 
-      <AmbientBackground />
-      <Navbar />
-
-      {/* tabIndex={-1} makes this programmatically focusable without adding it
-          to the tab order. index.css only styles :focus-visible, so this draws
-          no outline. */}
-      <main id="main" ref={mainRef} tabIndex={-1} className="focus:outline-none">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/work" element={<WorkPage />} />
-          <Route path="/work/:slug" element={<ProjectPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </main>
-
-      <Footer />
+      <Routes>
+        {/* Demos are other businesses' websites: no studio chrome. */}
+        <Route path="/work/:slug" element={<DemoPage />} />
+        {/* Everything else is the studio, one lazy chunk (see StudioSite).
+            A null fallback is only ever seen on the first visit to that
+            chunk; the HTML preloads it, so in practice it's already there. */}
+        <Route
+          path="*"
+          element={
+            <Suspense fallback={null}>
+              <StudioSite />
+            </Suspense>
+          }
+        />
+      </Routes>
     </>
   );
 }
