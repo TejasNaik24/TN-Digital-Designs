@@ -155,10 +155,13 @@ export function StudioAssistant() {
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
         hidden={open || contactInView}
-        className="fixed bottom-5 right-5 z-30 inline-flex min-h-12 items-center gap-2.5 rounded-full border border-hairline-strong bg-elevated px-5 text-[0.9375rem] font-medium text-ink shadow-[0_1px_0_0_rgb(180_205_255/0.08)_inset,0_16px_40px_-16px_rgb(0_0_0/0.9)] transition-colors duration-200 hover:border-azure/40 sm:bottom-6 sm:right-6"
+        // Below 640px: a 44px icon-only circle, so it covers as little of the
+        // page as possible. The label stays in the DOM (sr-only), so its
+        // accessible name is "Ask a question" at every width.
+        className="fixed bottom-5 right-5 z-30 inline-flex size-11 items-center justify-center rounded-full border border-hairline-strong bg-elevated text-[0.9375rem] font-medium text-ink shadow-[0_1px_0_0_rgb(180_205_255/0.08)_inset,0_16px_40px_-16px_rgb(0_0_0/0.9)] transition-colors duration-200 hover:border-azure/40 sm:bottom-6 sm:right-6 sm:size-auto sm:min-h-12 sm:gap-2.5 sm:px-5"
       >
         <MessageCircle aria-hidden="true" className="size-[1.125rem] text-azure" strokeWidth={1.75} />
-        Ask a question
+        <span className="max-sm:sr-only">Ask a question</span>
       </button>
 
       <AnimatePresence>

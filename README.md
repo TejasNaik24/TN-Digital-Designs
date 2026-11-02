@@ -142,8 +142,14 @@ Two assistants share one core:
 
 The studio prompt is built at request time from `site`, `services`, `processSteps`, `tiers`, `projects`, `faqs`, `reasons`, `technologies`, `PROJECT_TYPES` and `BUDGETS`. Edit `pricing.ts` and the assistant reflects it with no other change.
 
+- **Pricing behaviour** (all in the prompt, all from `pricing.ts`):
+  - Prices are quoted only as "starting at".
+  - The founding client offer (`foundingOffer`) may be mentioned for price or getting-started questions, never with a count of spots left or any urgency.
+  - Ordering, payments, checkout or e-commerce always gets the line that online payments are quoted on top of the tier.
+  - AI running costs are never called free and never given a dollar figure.
+  - Asked about past clients, it says plainly there's no client work to show yet.
 - **The pricing rule switches automatically.** While any tier's `startingAt` still contains the `X,XXX` placeholder, the assistant may not state any dollar amount. Once all three are real, it quotes them, always as "starting at".
-- **Keep the prompt under ~2,500 tokens** (it's about 2,400 now). If it grows past that, trim descriptions, never rules. The "why work with me" points are already titles-only for this reason.
+- **Keep the prompt near ~2,500 tokens** (it's about 2,600 now). If it grows, trim descriptions, never rules. The "why work with me" points are titles-only and the concept projects are name + link for this reason; the six "why" titles are the next cut.
 
 ### Never-invent rules
 
@@ -308,7 +314,7 @@ EmailJS's "public key" is designed to be exposed client-side. Set the template's
 
   Suspected bots see the normal success screen and nothing is sent.
 - **Pre-fill:** the pricing tiers' "Get a quote" and the studio assistant's handoff both go through `prefillContact()` in `lib/quote.ts`.
-- **Options:** project types and budgets live in `src/data/projectTypes.ts`. The first three project types match the pricing tiers.
+- **Options:** project types and budgets live in `src/data/projectTypes.ts`. The first three project types match the pricing tiers, and the budget bands are one per tier (under $1,000 / $1,000–$2,500 / $2,500–$5,000 / $5,000+). Revisit the bands if prices change.
 - **Validation** runs on blur. Company and budget stay optional on purpose.
 
 ---
@@ -335,8 +341,7 @@ The `seo()` plugin in `vite.config.ts` does three things at build time:
 
 | Item | Where |
 |---|---|
-| **Prices are `X,XXX`** | `src/data/pricing.ts`. The assistant refuses to quote prices until all three are real |
-| **Tier contents are draft promises** | `src/data/pricing.ts` |
+| **Tier contents and notes are promises** | `src/data/pricing.ts`. Each tier's `note` (third person, read by the assistant) and `pageNote` (first person, shown on the page) must say the same thing |
 | **FAQ answers are promises** | `src/data/faq.ts`. Confirm the timelines and support commitments |
 | **Social URLs are unverified** | `src/data/site.ts` |
 | **Homepage LCP ~2.7s on throttled mobile** | The hero is drawn by JS. The real fix is pre-rendering the hero's HTML at build time |

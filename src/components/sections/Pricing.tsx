@@ -3,7 +3,7 @@ import { Section, Shell } from '@/components/layout/Section';
 import { LinkButton } from '@/components/ui/Button';
 import { Reveal } from '@/components/ui/Reveal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
-import { tiers, type Tier } from '@/data/pricing';
+import { foundingOffer, tiers, type Tier } from '@/data/pricing';
 import { cn } from '@/lib/cn';
 import { useAnchorNavigate } from '@/lib/navigation';
 import { requestQuote } from '@/lib/quote';
@@ -53,7 +53,19 @@ function TierCard({ tier, index }: { tier: Tier; index: number }) {
           ))}
         </ul>
 
-        <div className="mt-auto pt-8">
+        {/* Conditions that change the price (payments, AI running costs):
+            visible next to what they qualify, never in small print. */}
+        {tier.pageNote && (
+          <p className="mt-6 border-l-2 border-hairline-strong pl-3.5 text-[0.875rem] leading-relaxed text-ink-2">
+            {tier.pageNote}
+          </p>
+        )}
+
+        {/* Below 640px the floating assistant launcher (44px, 20px from the
+            right edge) sweeps past every card as you scroll. The right padding
+            keeps each button ending at least 8px left of it, so it can never
+            sit on top of "Get a quote" at any scroll position. */}
+        <div className="mt-auto pt-8 max-sm:pr-6">
           <LinkButton
             href={hrefFor('contact')}
             variant={tier.recommended ? 'glow' : 'secondary'}
@@ -69,6 +81,18 @@ function TierCard({ tier, index }: { tier: Tier; index: number }) {
         </div>
       </article>
     </Reveal>
+  );
+}
+
+/** "Founding clients:" set as a lead-in; the rest reads as a plain sentence. */
+function FoundingOffer() {
+  const [lead, ...rest] = foundingOffer.split(':');
+  if (!rest.length) return <>{foundingOffer}</>;
+  return (
+    <>
+      <strong className="font-medium text-ink">{lead}:</strong>
+      {rest.join(':')}
+    </>
   );
 }
 
@@ -88,6 +112,14 @@ export function Pricing() {
             <TierCard key={tier.id} tier={tier} index={index} />
           ))}
         </div>
+
+        {/* Stated once, plainly. No spot counter, no countdown: the offer is
+            real, so it doesn't need manufactured urgency. */}
+        <Reveal>
+          <p className="mt-4 rounded-panel border border-hairline px-6 py-5 text-[0.9375rem] leading-relaxed text-ink-2 sm:px-8">
+            <FoundingOffer />
+          </p>
+        </Reveal>
       </Shell>
     </Section>
   );

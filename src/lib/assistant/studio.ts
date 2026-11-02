@@ -14,7 +14,7 @@ import { bestMatch, type AssistantConfig, type Handoff, type KnowledgeEntry } fr
 import { site } from '../../data/site.js';
 import { services } from '../../data/services.js';
 import { processSteps } from '../../data/process.js';
-import { tiers } from '../../data/pricing.js';
+import { foundingOffer, tiers } from '../../data/pricing.js';
 import { projects } from '../../data/projects.js';
 import { faqs } from '../../data/faq.js';
 import { reasons } from '../../data/why.js';
@@ -36,25 +36,26 @@ const priceLabel = (startingAt: string) =>
 const DEMO_PATHS = projects.map((project) => `/work/${project.slug}`).join(', ');
 
 export function systemPrompt(): string {
-  // Titles only: the full bodies pushed the prompt past its ~2,500-token
-  // budget, and the brief says trim descriptions, never rules.
+  // Descriptions are trimmed throughout (titles-only reasons, no service
+  // taglines, no "You get" lines, concept projects as name + link) to hold the prompt near its
+  // ~2,500-token budget. Trim descriptions, never rules.
   const why = reasons.map((reason) => `- ${reason.title}`).join('\n');
   const serviceList = services
-    .map((s) => `- ${s.label}: ${s.title} ${s.description} Examples: ${s.includes.join(', ')}.`)
+    .map((s) => `- ${s.label}: ${s.description}`)
     .join('\n');
   const process = processSteps
-    .map((step) => `${Number(step.step)}. ${step.title}: ${step.body} You get: ${step.output}.`)
+    .map((step) => `${Number(step.step)}. ${step.title}: ${step.body}`)
     .join('\n');
   const pricing = tiers
     .map(
       (tier) =>
-        `- ${tier.name}${tier.recommended ? ' (what Tejas suggests for most businesses)' : ''}: ${priceLabel(tier.startingAt)}. ${tier.forWho} Includes: ${tier.includes.join('; ')}.`,
+        `- ${tier.name}${tier.recommended ? ' (what Tejas suggests for most businesses)' : ''}: ${priceLabel(tier.startingAt)}. ${tier.forWho} Includes: ${tier.includes.join('; ')}.${tier.note ? ` Note: ${tier.note}` : ''}`,
     )
     .join('\n');
   const work = projects
     .map(
       (p) =>
-        `- ${p.title} (${p.category.toLowerCase()}): ${p.shortDescription} Try: ${p.tryIt} Link: /work/${p.slug}`,
+        `- ${p.title}, a ${p.category.toLowerCase()}: /work/${p.slug}`,
     )
     .join('\n');
   const faq = faqs.map((item) => `Q: ${item.question}\nA: ${item.answer}`).join('\n');
@@ -72,13 +73,18 @@ HOW TO ANSWER
 - Plain language. Many visitors are small-business owners, not developers. Explain any technical term you use in a few words.
 - Match the visitor's language. If they write in another language, answer in that language.
 - End with a helpful next step when it fits naturally (a question, a link to a section, or an offer to start a project). Don't tack a sales pitch onto every message.
+- Whenever a visitor mentions online ordering, payments, checkout, or e-commerce, say that taking payments online is quoted separately, on top of the tier (see the Business site note).
+- When a visitor asks about price or how to get started, you may mention the founding client offer once. Don't repeat it in every message.
 - Formatting: plain text only. For a list, put each item on its own line starting with "- ". No bold, headings, or other markdown.
 
 WHAT YOU MUST NEVER DO
 - Never invent prices, discounts, timelines, guarantees, deadlines, availability, or capabilities that aren't in the facts below. If you're unsure, say so and offer to pass the question to Tejas.
 - Never quote a firm price or deadline for a specific project. Explain the starting points that exist, then say Tejas gives a fixed quote with a real timeline after a short conversation.
+- Never say whether a visitor's deadline or timeline fits, works, is realistic, or is too tight — not even softly ("that fits well", "that should be fine"). Only state the typical range from the frequent questions below, and say Tejas confirms the timeline in his quote.
 - ${pricesArePlaceholders() ? PRICING_RULE_PLACEHOLDER : PRICING_RULE_PUBLISHED}
-- Never claim past clients, testimonials, reviews, ratings, or results. All work shown on the site is concept projects for fictional businesses. Say so plainly if asked.
+- Never claim past clients, testimonials, reviews, ratings, or results. If asked about past clients or previous work, say plainly that there is no client work to show yet and that the site shows concept projects for fictional businesses. Never use wording that implies other clients exist (for example "those specific companies", "other clients", "recent projects"). You may mention the founding client offer as the way to be one of the first clients.
+- Never say how many founding-client spots are left, and never create urgency or pressure ("only 1 left", "act fast", "limited time", "don't miss out").
+- Never say the AI assistant is free to run, and never give a dollar amount for its running costs. Say they are usually low at small-business traffic, depend on usage, and are paid to the provider directly.
 - Never share personal information about Tejas beyond what's in the facts (his name, email, GitHub, LinkedIn). No age, school, location, employer, or other personal details.
 - Never give legal, tax, or financial advice. You can say what a website can do; questions about contracts, taxes, or licensing go to Tejas.
 - Never write code, essays, or answers unrelated to Tejas's services. Politely decline off-topic requests in one sentence and bring the conversation back.
@@ -102,6 +108,7 @@ ${process}
 PRICING
 ${pricing}
 Pricing notes: Every project gets a fixed quote with a timeline before any work starts. Prices are starting points; the final quote depends on what the business actually needs.
+Founding client offer, in Tejas's words: "${foundingOffer}"
 
 CONCEPT WORK
 These are fictional businesses with real, working websites built to show what's possible. They are not clients.
@@ -127,7 +134,7 @@ When someone describes a project or asks how to get started:
    - Their timeline (rough is fine)
    - Optionally, their budget range and any must-have features
    Don't interrogate. If they've already told you something, don't ask again. Two or three questions is usually enough.
-2. Suggest the tier or project type that fits, in one sentence, and why. Don't attach a timeline or price to the suggestion; Tejas confirms both in his quote.
+2. Suggest the tier or project type that fits, in one sentence, and why. Don't attach a timeline to it or comment on whether their deadline fits; if you mention its price, call it a starting point. Tejas confirms both in his quote.
 3. Offer the handoff: "Want me to put this into the contact form for you? You'll just add your name and email and press send."
 4. Only if they say yes, call the handoff (see OUTPUT FORMAT). Never claim the message has been sent; the visitor sends it themselves.
 
@@ -155,24 +162,32 @@ const serviceAnswer = (id: string) => {
 function pricingAnswer(): string {
   const names = tiers.map((tier) => tier.name).join(', ');
   if (pricesArePlaceholders()) {
-    return `There are three starting points — ${names} — and the price depends on what your business actually needs. Tejas sends a fixed quote with a real timeline after a short conversation, before any work starts. The Pricing section (#pricing) lists what each one includes.`;
+    return `There are three starting points — ${names} — and the price depends on what your business actually needs. Tejas sends a fixed quote with a real timeline after a short conversation, before any work starts. The Pricing section (#pricing) lists what each one includes. ${FOUNDING_LINE}`;
   }
   const list = tiers.map((tier) => `- ${tier.name}: starting at $${tier.startingAt}`).join('\n');
-  return `These are starting points, not final prices:\n${list}\nTejas sends a fixed quote with a real timeline after a short conversation, before any work starts.`;
+  return `These are starting points, not final prices:\n${list}\nTejas sends a fixed quote with a real timeline after a short conversation, before any work starts. ${FOUNDING_LINE}`;
 }
+
+const tierNote = (id: string) => tiers.find((tier) => tier.id === id)?.note ?? '';
+const PAYMENTS_LINE = `${tierNote('business')} It's quoted on top of the tier.`;
+const FOUNDING_LINE = 'Tejas also has a founding client offer: his first 3 clients get 25% off in exchange for an honest review and permission to show the finished site.';
+/** Visitor words that trigger the payments line, wherever they appear. */
+const PAYMENT_WORDS = /\b(order(ing)?|payments?|pay online|checkout|check out|e-?commerce|online store|sell online|square|stripe|toast)\b/i;
 
 const faqAnswer = (match: RegExp) => faqs.find((item) => match.test(item.question))?.answer ?? '';
 
 /** Ordered most to least specific: ties go to the earlier entry. Keywords are
  *  matched against the question padded with spaces, so ' ai ' is a word. */
 const knowledge: KnowledgeEntry[] = [
+  { topic: 'running-costs', keywords: ['running cost', 'cost extra', 'extra every', 'monthly', 'per month', 'every month', 'ongoing cost', 'subscription', 'free to run'], answer: tierNote('ai') },
+  { topic: 'payments', keywords: ['payment', 'checkout', 'e commerce', 'ecommerce', 'online store', 'sell online', 'square', 'stripe', 'toast'], answer: PAYMENTS_LINE },
   { topic: 'start', keywords: ['get started', 'start a project', 'hire', 'work with you', 'work with tejas', 'need a site', 'need a website', 'build me', 'build my', 'i run', 'i own', 'my business', 'my shop'], answer: '' },
   { topic: 'pricing', keywords: ['price', 'cost', 'how much', 'budget', 'expensive', 'cheap', 'pricing', 'afford', ' rates '], answer: pricingAnswer() },
   { topic: 'timeline', keywords: ['how long', 'timeline', 'weeks', 'deadline', ' days', 'how fast', 'how quickly', 'turnaround'], answer: faqAnswer(/how long/i) },
   { topic: 'ai', keywords: [' ai ', 'chatbot', 'assistant', 'gpt', 'automation', 'semantic', 'machine learning'], answer: faqAnswer(/AI features/i) },
   { topic: 'redesign', keywords: ['redesign', 'existing site', 'existing website', 'rebuild', 'old site', 'current site'], answer: faqAnswer(/redesign/i) },
   { topic: 'support', keywords: ['support', 'maintenance', 'maintain', 'after launch', 'hosting', 'updates'], answer: faqAnswer(/support/i) },
-  { topic: 'work', keywords: ['client', 'portfolio', 'example', 'concept', 'previous', 'worked with', 'past work', 'demo', 'restaurant', 'clinic', 'gym', 'testimonial', 'review'], answer: `Everything shown on the site is concept work: real, working websites for fictional businesses, not clients. You can try them at ${DEMO_PATHS}.` },
+  { topic: 'work', keywords: ['client', 'portfolio', 'example', 'concept', 'previous', 'worked with', 'past work', 'demo', 'restaurant', 'clinic', 'gym', 'testimonial', 'review'], answer: `There's no client work to show yet. Everything on the site is a concept project: a real, working website for a fictional business, which you can try at ${DEMO_PATHS}. ${FOUNDING_LINE}` },
   { topic: 'process', keywords: ['process', 'how does it work', 'steps', 'stages', 'how do you work', 'what happens'], answer: `It runs in ${processSteps.length} stages: ${processSteps.map((step) => `${step.title.toLowerCase()} (${step.output.toLowerCase()})`).join(', ')}. The Process section (#process) walks through each one.` },
   { topic: 'applications', keywords: ['dashboard', 'portal', 'web app', 'application', 'booking system', 'internal tool', 'backend'], answer: serviceAnswer('applications') },
   { topic: 'experiences', keywords: ['animation', 'motion', 'interactive', 'scroll', 'micro'], answer: serviceAnswer('experiences') },
@@ -186,14 +201,15 @@ const FALLBACK = `I'm not sure about that one, but Tejas can answer it. ${CONTAC
 export function scriptedReply(question: string): { text: string; handoff?: Handoff } {
   const padded = ` ${question.toLowerCase().replace(/[^\p{L}\p{N}\s$]/gu, ' ')} `;
   const match = bestMatch(padded, knowledge);
-  if (!match) return { text: FALLBACK };
+  if (!match) return { text: PAYMENT_WORDS.test(question) ? PAYMENTS_LINE : FALLBACK };
+  const payments = PAYMENT_WORDS.test(question) && match.topic !== 'payments' ? ` ${PAYMENTS_LINE}` : '';
   if (match.topic === 'start') {
     return {
-      text: 'Happy to help you get started. I can put what you wrote into the contact form — you just add your name and email, check it over, and press send.',
+      text: `Happy to help you get started.${payments} I can put what you wrote into the contact form — you just add your name and email, check it over, and press send.`,
       handoff: { projectType: 'Something else', budget: '', details: question.trim().slice(0, 600) },
     };
   }
-  return { text: match.answer || FALLBACK };
+  return { text: `${match.answer || FALLBACK}${payments}` };
 }
 
 export const studioAssistant: AssistantConfig = {
